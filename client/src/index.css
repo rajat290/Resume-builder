@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #10233d;
+  background: #eef3f7;
+  font-family: "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.resume-page {
+  width: 210mm;
+  min-height: 297mm;
+}
+
+.section-title {
+  @apply mb-3 border-b border-slate-300 pb-1 text-xs font-semibold uppercase tracking-[0.25em] text-slate-500;
+}
+
+.field-label {
+  @apply mb-1 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500;
+}
+
+.field-input {
+  @apply w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/10;
+}
+
+.field-textarea {
+  @apply min-h-28 w-full resize-y rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/10;
+}
+
+.pill-button {
+  @apply rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-accent hover:text-accent;
+}
