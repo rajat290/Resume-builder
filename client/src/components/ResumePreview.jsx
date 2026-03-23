@@ -2,12 +2,20 @@ import ClassicTemplate from "../templates/ClassicTemplate";
 import CompactTemplate from "../templates/CompactTemplate";
 import ExecutiveTemplate from "../templates/ExecutiveTemplate";
 import SidebarTemplate from "../templates/SidebarTemplate";
+import AtsCompactTemplate from "../templates/AtsCompactTemplate";
+import AtsDetailedTemplate from "../templates/AtsDetailedTemplate";
+import AtsMinimalTemplate from "../templates/AtsMinimalTemplate";
+import AtsSerifTemplate from "../templates/AtsSerifTemplate";
 
 const templateMap = {
   classic: ClassicTemplate,
   sidebar: SidebarTemplate,
   compact: CompactTemplate,
-  executive: ExecutiveTemplate
+  executive: ExecutiveTemplate,
+  "ats-minimal": AtsMinimalTemplate,
+  "ats-compact": AtsCompactTemplate,
+  "ats-serif": AtsSerifTemplate,
+  "ats-detailed": AtsDetailedTemplate
 };
 
 export default function ResumePreview({ resume, selectedTemplate, resumeRef }) {
