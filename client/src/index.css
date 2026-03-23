@@ -22,6 +22,12 @@ body {
   min-height: 297mm;
 }
 
+@media (max-width: 1023px) {
+  .resume-page {
+    min-height: auto;
+  }
+}
+
 .section-title {
   @apply mb-3 border-b border-slate-300 pb-1 text-xs font-semibold uppercase tracking-[0.25em] text-slate-500;
 }

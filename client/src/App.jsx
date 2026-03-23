@@ -19,7 +19,10 @@ export default function App() {
     import: true,
     analyzer: true
   });
+  const [mobileView, setMobileView] = useState("editor");
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
   const resumeRef = useRef(null);
+  const resumeUploadRef = useRef(null);
 
   useEffect(() => {
     const loadResume = async () => {
@@ -126,15 +129,48 @@ export default function App() {
           onTemplateChange={setSelectedTemplate}
           onOptimize={handleOptimize}
           onDownload={handleDownload}
+          onUploadResume={() => resumeUploadRef.current?.click()}
           isOptimizing={isOptimizing}
+          isUploading={isUploadingResume}
         />
 
-        <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-          <div className="space-y-6">
+        <div className="grid gap-3 lg:hidden">
+          <div className="rounded-[1.75rem] border border-slate-200 bg-white/80 p-2 shadow-panel backdrop-blur">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setMobileView("editor")}
+                className={`rounded-full px-4 py-3 text-sm font-semibold transition ${
+                  mobileView === "editor"
+                    ? "bg-ink text-white"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                Editor
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobileView("preview")}
+                className={`rounded-full px-4 py-3 text-sm font-semibold transition ${
+                  mobileView === "preview"
+                    ? "bg-ink text-white"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                Preview
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr] xl:items-start">
+          <div className={`space-y-6 ${mobileView === "preview" ? "hidden lg:block" : ""}`}>
             <ResumeImportPanel
               isOpen={leftPanels.import}
               onToggle={() => toggleLeftPanel("import")}
               onImportComplete={handleImportedResume}
+              externalFileInputRef={resumeUploadRef}
+              onFileImportStateChange={setIsUploadingResume}
             />
             <JobMatchPanel
               jobDescription={jobDescription}
@@ -146,11 +182,13 @@ export default function App() {
             <ResumeEditor resume={resume} setResume={setResume} />
           </div>
 
-          <ResumePreview
-            resume={resume}
-            selectedTemplate={selectedTemplate}
-            resumeRef={resumeRef}
-          />
+          <div className={mobileView === "editor" ? "hidden lg:block" : ""}>
+            <ResumePreview
+              resume={resume}
+              selectedTemplate={selectedTemplate}
+              resumeRef={resumeRef}
+            />
+          </div>
         </div>
       </div>
     </main>

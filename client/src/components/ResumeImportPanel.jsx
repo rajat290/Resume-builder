@@ -6,12 +6,21 @@ const API_URL = "http://localhost:4000/api";
 export default function ResumeImportPanel({
   isOpen,
   onToggle,
-  onImportComplete
+  onImportComplete,
+  externalFileInputRef,
+  onFileImportStateChange
 }) {
   const [pastedText, setPastedText] = useState("");
   const [isImporting, setIsImporting] = useState(false);
   const [message, setMessage] = useState("");
   const fileInputRef = useRef(null);
+
+  const registerFileRef = (node) => {
+    fileInputRef.current = node;
+    if (externalFileInputRef) {
+      externalFileInputRef.current = node;
+    }
+  };
 
   const importFromText = async () => {
     if (!pastedText.trim()) {
@@ -20,6 +29,7 @@ export default function ResumeImportPanel({
     }
 
     setIsImporting(true);
+    onFileImportStateChange?.(true);
     setMessage("");
     try {
       const response = await fetch(`${API_URL}/import/text`, {
@@ -37,6 +47,7 @@ export default function ResumeImportPanel({
       setMessage("Could not import the pasted resume text.");
     } finally {
       setIsImporting(false);
+      onFileImportStateChange?.(false);
     }
   };
 
@@ -47,6 +58,7 @@ export default function ResumeImportPanel({
     }
 
     setIsImporting(true);
+    onFileImportStateChange?.(true);
     setMessage("");
 
     try {
@@ -69,6 +81,7 @@ export default function ResumeImportPanel({
       setMessage(error.message || "Could not import the uploaded file.");
     } finally {
       setIsImporting(false);
+      onFileImportStateChange?.(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -81,19 +94,9 @@ export default function ResumeImportPanel({
       description="Paste resume text or upload a .txt, .docx, or .pdf file to prefill the editor."
       isOpen={isOpen}
       onToggle={onToggle}
-      actions={
-        <button
-          type="button"
-          className="pill-button"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isImporting}
-        >
-          Upload resume
-        </button>
-      }
     >
       <input
-        ref={fileInputRef}
+        ref={registerFileRef}
         type="file"
         accept=".txt,.docx,.pdf"
         className="hidden"
@@ -115,6 +118,14 @@ export default function ResumeImportPanel({
           disabled={isImporting}
         >
           {isImporting ? "Importing..." : "Import pasted text"}
+        </button>
+        <button
+          type="button"
+          className="pill-button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isImporting}
+        >
+          Upload from device
         </button>
       </div>
       {message && <p className="mt-3 text-sm text-slate-500">{message}</p>}

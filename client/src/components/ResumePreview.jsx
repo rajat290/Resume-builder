@@ -22,9 +22,19 @@ export default function ResumePreview({ resume, selectedTemplate, resumeRef }) {
   const Template = templateMap[selectedTemplate] ?? ClassicTemplate;
 
   return (
-    <div className="rounded-[2rem] border border-slate-200 bg-[#dfe7ef] p-4 shadow-panel lg:sticky lg:top-6">
-      <div ref={resumeRef} className="mx-auto overflow-hidden rounded-xl bg-white">
-        <Template resume={resume} />
+    <div className="rounded-[2rem] border border-slate-200 bg-[#dfe7ef] p-3 shadow-panel sm:p-4 lg:sticky lg:top-6">
+      <div className="mb-3 flex items-center justify-between px-1">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Live Preview
+          </p>
+          <p className="text-sm text-slate-500">Scroll horizontally on smaller screens.</p>
+        </div>
+      </div>
+      <div className="overflow-x-auto rounded-xl bg-white/70 p-2 sm:p-3">
+        <div ref={resumeRef} className="mx-auto min-w-[210mm] overflow-hidden rounded-xl bg-white shadow-sm">
+          <Template resume={resume} />
+        </div>
       </div>
     </div>
   );
