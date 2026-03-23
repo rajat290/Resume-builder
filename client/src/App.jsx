@@ -1,196 +1,76 @@
-import { useEffect, useRef, useState } from "react";
-import html2pdf from "html2pdf.js";
-import JobMatchPanel from "./components/JobMatchPanel";
-import ResumeEditor from "./components/ResumeEditor";
-import ResumeImportPanel from "./components/ResumeImportPanel";
-import ResumePreview from "./components/ResumePreview";
-import TopBar from "./components/TopBar";
-import { emptyResume, normalizeResumeData } from "./utils/resumeHelpers";
+import { useEffect, useState } from "react";
+import AuthModal from "./components/AuthModal";
+import LandingPage from "./components/LandingPage";
+import ResumeWorkspace from "./components/ResumeWorkspace";
 
-const API_URL = "http://localhost:4000/api";
+const STORAGE_KEY = "smart-resume-builder-auth";
 
 export default function App() {
-  const [resume, setResume] = useState(emptyResume);
-  const [selectedTemplate, setSelectedTemplate] = useState("classic");
-  const [jobDescription, setJobDescription] = useState("");
-  const [keywords, setKeywords] = useState([]);
-  const [isOptimizing, setIsOptimizing] = useState(false);
-  const [leftPanels, setLeftPanels] = useState({
-    import: true,
-    analyzer: true
-  });
-  const [mobileView, setMobileView] = useState("editor");
-  const [isUploadingResume, setIsUploadingResume] = useState(false);
-  const resumeRef = useRef(null);
-  const resumeUploadRef = useRef(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [session, setSession] = useState(null);
 
   useEffect(() => {
-    const loadResume = async () => {
-      try {
-        const response = await fetch(`${API_URL}/resume`);
-        const data = await response.json();
-        setResume(normalizeResumeData(data));
-      } catch (error) {
-        console.error("Failed to load resume", error);
-      }
-    };
-
-    loadResume();
+    const savedSession = window.localStorage.getItem(STORAGE_KEY);
+    if (savedSession) {
+      setSession(JSON.parse(savedSession));
+    }
   }, []);
 
-  useEffect(() => {
-    const controller = new AbortController();
+  const persistSession = (nextSession) => {
+    setSession(nextSession);
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextSession));
+  };
 
-    const persistResume = async () => {
-      try {
-        await fetch(`${API_URL}/resume`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(resume),
-          signal: controller.signal
-        });
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          console.error("Failed to persist resume", error);
-        }
-      }
+  const handleGoogleContinue = () => {
+    setIsAuthenticating(true);
+
+    window.setTimeout(() => {
+      const nextSession = {
+        provider: "google",
+        name: "Google User",
+        mode: "authenticated"
+      };
+
+      persistSession(nextSession);
+      setIsAuthenticating(false);
+      setAuthModalOpen(false);
+    }, 900);
+  };
+
+  const handleDemoContinue = () => {
+    const nextSession = {
+      provider: "demo",
+      name: "Demo User",
+      mode: "demo"
     };
 
-    if (resume.personalInfo.fullName) {
-      persistResume();
-    }
-
-    return () => controller.abort();
-  }, [resume]);
-
-  const handleOptimize = async () => {
-    if (!jobDescription.trim()) {
-      return;
-    }
-
-    setIsOptimizing(true);
-    try {
-      const response = await fetch(`${API_URL}/resume/analyze`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          jobDescription,
-          resume
-        })
-      });
-
-      const data = await response.json();
-      setKeywords(data.keywords);
-      setResume(normalizeResumeData(data.optimizedResume));
-    } catch (error) {
-      console.error("Failed to optimize resume", error);
-    } finally {
-      setIsOptimizing(false);
-    }
+    persistSession(nextSession);
+    setAuthModalOpen(false);
   };
 
-  const handleDownload = () => {
-    if (!resumeRef.current) {
-      return;
-    }
-
-    html2pdf()
-      .set({
-        margin: [0, 0, 0, 0],
-        filename: `${resume.personalInfo.fullName || "resume"}-${selectedTemplate}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-      })
-      .from(resumeRef.current)
-      .save();
+  const handleSignOut = () => {
+    setSession(null);
+    window.localStorage.removeItem(STORAGE_KEY);
   };
 
-  const toggleLeftPanel = (section) => {
-    setLeftPanels((current) => ({
-      ...current,
-      [section]: !current[section]
-    }));
-  };
-
-  const handleImportedResume = (importedResume) => {
-    setResume(normalizeResumeData(importedResume));
-  };
+  if (session) {
+    return <ResumeWorkspace currentUser={session} onSignOut={handleSignOut} />;
+  }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(198,107,61,0.12),_transparent_35%),linear-gradient(180deg,_#f7f3eb_0%,_#eef3f7_56%,_#e3ebf3_100%)] px-4 py-6 text-ink md:px-6 lg:px-8">
-      <div className="mx-auto max-w-[1600px] space-y-6">
-        <TopBar
-          selectedTemplate={selectedTemplate}
-          onTemplateChange={setSelectedTemplate}
-          onOptimize={handleOptimize}
-          onDownload={handleDownload}
-          onUploadResume={() => resumeUploadRef.current?.click()}
-          isOptimizing={isOptimizing}
-          isUploading={isUploadingResume}
-        />
-
-        <div className="grid gap-3 lg:hidden">
-          <div className="rounded-[1.75rem] border border-slate-200 bg-white/80 p-2 shadow-panel backdrop-blur">
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setMobileView("editor")}
-                className={`rounded-full px-4 py-3 text-sm font-semibold transition ${
-                  mobileView === "editor"
-                    ? "bg-ink text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                Editor
-              </button>
-              <button
-                type="button"
-                onClick={() => setMobileView("preview")}
-                className={`rounded-full px-4 py-3 text-sm font-semibold transition ${
-                  mobileView === "preview"
-                    ? "bg-ink text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                Preview
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr] xl:items-start">
-          <div className={`space-y-6 ${mobileView === "preview" ? "hidden lg:block" : ""}`}>
-            <ResumeImportPanel
-              isOpen={leftPanels.import}
-              onToggle={() => toggleLeftPanel("import")}
-              onImportComplete={handleImportedResume}
-              externalFileInputRef={resumeUploadRef}
-              onFileImportStateChange={setIsUploadingResume}
-            />
-            <JobMatchPanel
-              jobDescription={jobDescription}
-              onJobDescriptionChange={setJobDescription}
-              keywords={keywords}
-              isOpen={leftPanels.analyzer}
-              onToggle={() => toggleLeftPanel("analyzer")}
-            />
-            <ResumeEditor resume={resume} setResume={setResume} />
-          </div>
-
-          <div className={mobileView === "editor" ? "hidden lg:block" : ""}>
-            <ResumePreview
-              resume={resume}
-              selectedTemplate={selectedTemplate}
-              resumeRef={resumeRef}
-            />
-          </div>
-        </div>
-      </div>
-    </main>
+    <>
+      <LandingPage
+        onPrimaryCta={() => setAuthModalOpen(true)}
+        onSecondaryCta={handleDemoContinue}
+      />
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onGoogleContinue={handleGoogleContinue}
+        onDemoContinue={handleDemoContinue}
+        isLoading={isAuthenticating}
+      />
+    </>
   );
 }

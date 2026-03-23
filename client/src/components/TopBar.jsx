@@ -8,7 +8,9 @@ export default function TopBar({
   onDownload,
   onUploadResume,
   isOptimizing,
-  isUploading
+  isUploading,
+  currentUser,
+  onSignOut
 }) {
   return (
     <div className="rounded-[2rem] border border-slate-200 bg-paper/95 p-5 shadow-panel backdrop-blur md:p-6">
@@ -24,6 +26,23 @@ export default function TopBar({
             Edit, optimize, and export resumes from desktop or mobile with a cleaner
             step-by-step workflow.
           </p>
+          {currentUser && (
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <span className="rounded-full bg-sky-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
+                {currentUser.mode === "demo" ? "Demo Mode" : "Google Connected"}
+              </span>
+              <span className="text-sm text-slate-500">{currentUser.name}</span>
+              {onSignOut && (
+                <button
+                  type="button"
+                  onClick={onSignOut}
+                  className="text-sm font-semibold text-slate-600 transition hover:text-sky-700"
+                >
+                  Sign out
+                </button>
+              )}
+            </div>
+          )}
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[640px] xl:grid-cols-[minmax(180px,220px)_1fr_1fr_1fr]">
           <select
