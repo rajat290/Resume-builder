@@ -7,6 +7,7 @@ import {
   PlainSkills,
   PlainSummary
 } from "./AtsTemplateParts";
+import { hasEducationContent, hasExperienceContent, hasProjectContent, hasSkillContent, hasText } from "../utils/resumeHelpers";
 
 export default function AtsDetailedTemplate({ resume }) {
   return (
@@ -14,21 +15,31 @@ export default function AtsDetailedTemplate({ resume }) {
       <div className="border border-black px-6 py-5">
         <PlainHeader personalInfo={resume.personalInfo} />
       </div>
-      <PlainSection title="Summary">
-        <PlainSummary summary={resume.personalInfo.summary} />
-      </PlainSection>
-      <PlainSection title="Core Skills">
-        <PlainSkills skills={resume.skills} />
-      </PlainSection>
-      <PlainSection title="Work Experience">
-        <PlainExperience experience={resume.experience} />
-      </PlainSection>
-      <PlainSection title="Projects">
-        <PlainProjects projects={resume.projects} />
-      </PlainSection>
-      <PlainSection title="Education">
-        <PlainEducation education={resume.education} />
-      </PlainSection>
+      {hasText(resume.personalInfo.summary) && (
+        <PlainSection title="Summary">
+          <PlainSummary summary={resume.personalInfo.summary} />
+        </PlainSection>
+      )}
+      {hasSkillContent(resume.skills) && (
+        <PlainSection title="Core Skills">
+          <PlainSkills skills={resume.skills} />
+        </PlainSection>
+      )}
+      {hasExperienceContent(resume.experience) && (
+        <PlainSection title="Work Experience">
+          <PlainExperience experience={resume.experience} />
+        </PlainSection>
+      )}
+      {hasProjectContent(resume.projects) && (
+        <PlainSection title="Projects">
+          <PlainProjects projects={resume.projects} />
+        </PlainSection>
+      )}
+      {hasEducationContent(resume.education) && (
+        <PlainSection title="Education">
+          <PlainEducation education={resume.education} />
+        </PlainSection>
+      )}
     </div>
   );
 }

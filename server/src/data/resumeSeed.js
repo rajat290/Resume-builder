@@ -11,12 +11,25 @@ export const resumeSeed = {
       "Full stack developer focused on building fast, ATS-friendly web products with clean user experiences and measurable impact."
   },
   skills: [
-    { name: "React", level: "Advanced" },
-    { name: "Node.js", level: "Advanced" },
-    { name: "Express.js", level: "Advanced" },
-    { name: "MongoDB", level: "Intermediate" },
-    { name: "Tailwind CSS", level: "Advanced" },
-    { name: "REST APIs", level: "Advanced" }
+    {
+      category: "Frontend",
+      items: [
+        { name: "React", level: "Advanced" },
+        { name: "Tailwind CSS", level: "Advanced" }
+      ]
+    },
+    {
+      category: "Backend",
+      items: [
+        { name: "Node.js", level: "Advanced" },
+        { name: "Express.js", level: "Advanced" },
+        { name: "MongoDB", level: "Intermediate" }
+      ]
+    },
+    {
+      category: "Other",
+      items: [{ name: "REST APIs", level: "Advanced" }]
+    }
   ],
   experience: [
     {
