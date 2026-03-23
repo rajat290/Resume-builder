@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import importRoutes from "./routes/importRoutes.js";
 import resumeRoutes from "./routes/resumeRoutes.js";
 
 const app = express();
@@ -13,6 +14,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.use("/api/resume", resumeRoutes);
+app.use("/api/import", importRoutes);
 
 app.listen(PORT, () => {
   console.log(`Resume Builder API running on http://localhost:${PORT}`);

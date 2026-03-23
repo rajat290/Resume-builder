@@ -25,9 +25,12 @@ const COMMON_STOP_WORDS = new Set([
 
 const KNOWN_KEYWORDS = [
   "react",
+  "next",
+  "jquery",
   "node.js",
   "node",
   "express",
+  "laravel",
   "mongodb",
   "javascript",
   "typescript",
@@ -36,8 +39,6 @@ const KNOWN_KEYWORDS = [
   "html",
   "rest",
   "api",
-  "git",
-  "sql",
   "aws",
   "docker",
   "frontend",
@@ -46,6 +47,9 @@ const KNOWN_KEYWORDS = [
   "agile",
   "testing"
 ];
+
+const stripRichText = (value = "") =>
+  String(value).replace(/\[(\/)?(b|i|u|color(?::#[0-9a-fA-F]{3,6})?)\]/g, "");
 
 export function extractKeywords(jobDescription = "") {
   const normalized = jobDescription.toLowerCase();
@@ -58,7 +62,7 @@ export function extractKeywords(jobDescription = "") {
     .split(/\s+/)
     .filter((token) => token.length > 2 && !COMMON_STOP_WORDS.has(token));
 
-  const ranked = [...new Set([...explicitMatches, ...tokenMatches])]
+  return [...new Set([...explicitMatches, ...tokenMatches])]
     .map((keyword) => ({
       keyword,
       score:
@@ -66,8 +70,6 @@ export function extractKeywords(jobDescription = "") {
     }))
     .sort((a, b) => b.score - a.score)
     .slice(0, 20);
-
-  return ranked;
 }
 
 export function optimizeResume(resume, keywords = []) {
@@ -75,15 +77,26 @@ export function optimizeResume(resume, keywords = []) {
   const scoreText = (text = "") =>
     keywordList.reduce(
       (score, keyword) =>
-        score + (text.toLowerCase().includes(keyword) ? keyword.length : 0),
+        score + (stripRichText(text).toLowerCase().includes(keyword) ? keyword.length : 0),
       0
     );
 
+  const sortedSkills = [...resume.skills]
+    .map((group) => ({
+      ...group,
+      items: [...group.items].sort(
+        (a, b) => scoreText(b.name) - scoreText(a.name) || a.name.localeCompare(b.name)
+      )
+    }))
+    .sort((a, b) => {
+      const scoreGroup = (group) =>
+        group.items.reduce((sum, item) => sum + scoreText(item.name), 0) + scoreText(group.category);
+      return scoreGroup(b) - scoreGroup(a);
+    });
+
   return {
     ...resume,
-    skills: [...resume.skills].sort(
-      (a, b) => scoreText(b.name) - scoreText(a.name) || a.name.localeCompare(b.name)
-    ),
+    skills: sortedSkills,
     projects: [...resume.projects].sort(
       (a, b) =>
         scoreText(`${b.name} ${b.stack} ${b.description}`) -

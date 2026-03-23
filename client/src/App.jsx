@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import html2pdf from "html2pdf.js";
 import JobMatchPanel from "./components/JobMatchPanel";
 import ResumeEditor from "./components/ResumeEditor";
+import ResumeImportPanel from "./components/ResumeImportPanel";
 import ResumePreview from "./components/ResumePreview";
 import TopBar from "./components/TopBar";
-import { emptyResume } from "./utils/resumeHelpers";
+import { emptyResume, normalizeResumeData } from "./utils/resumeHelpers";
 
 const API_URL = "http://localhost:4000/api";
 
@@ -14,6 +15,10 @@ export default function App() {
   const [jobDescription, setJobDescription] = useState("");
   const [keywords, setKeywords] = useState([]);
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [leftPanels, setLeftPanels] = useState({
+    import: true,
+    analyzer: true
+  });
   const resumeRef = useRef(null);
 
   useEffect(() => {
@@ -21,7 +26,7 @@ export default function App() {
       try {
         const response = await fetch(`${API_URL}/resume`);
         const data = await response.json();
-        setResume(data);
+        setResume(normalizeResumeData(data));
       } catch (error) {
         console.error("Failed to load resume", error);
       }
@@ -77,7 +82,7 @@ export default function App() {
 
       const data = await response.json();
       setKeywords(data.keywords);
-      setResume(data.optimizedResume);
+      setResume(normalizeResumeData(data.optimizedResume));
     } catch (error) {
       console.error("Failed to optimize resume", error);
     } finally {
@@ -102,6 +107,17 @@ export default function App() {
       .save();
   };
 
+  const toggleLeftPanel = (section) => {
+    setLeftPanels((current) => ({
+      ...current,
+      [section]: !current[section]
+    }));
+  };
+
+  const handleImportedResume = (importedResume) => {
+    setResume(normalizeResumeData(importedResume));
+  };
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(198,107,61,0.12),_transparent_35%),linear-gradient(180deg,_#f7f3eb_0%,_#eef3f7_56%,_#e3ebf3_100%)] px-4 py-6 text-ink md:px-6 lg:px-8">
       <div className="mx-auto max-w-[1600px] space-y-6">
@@ -115,10 +131,17 @@ export default function App() {
 
         <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
           <div className="space-y-6">
+            <ResumeImportPanel
+              isOpen={leftPanels.import}
+              onToggle={() => toggleLeftPanel("import")}
+              onImportComplete={handleImportedResume}
+            />
             <JobMatchPanel
               jobDescription={jobDescription}
               onJobDescriptionChange={setJobDescription}
               keywords={keywords}
+              isOpen={leftPanels.analyzer}
+              onToggle={() => toggleLeftPanel("analyzer")}
             />
             <ResumeEditor resume={resume} setResume={setResume} />
           </div>

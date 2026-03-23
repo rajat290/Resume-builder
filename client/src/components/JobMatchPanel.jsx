@@ -1,19 +1,19 @@
+import CollapsibleCard from "./CollapsibleCard";
+
 export default function JobMatchPanel({
   jobDescription,
   onJobDescriptionChange,
-  keywords
+  keywords,
+  isOpen,
+  onToggle
 }) {
   return (
-    <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-panel">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h2 className="font-display text-2xl text-ink">Job Description Analyzer</h2>
-          <p className="text-sm text-slate-500">
-            Paste a role description to reprioritize skills, projects, and experience.
-          </p>
-        </div>
-      </div>
-
+    <CollapsibleCard
+      title="Job Description Analyzer"
+      description="Paste a role description to reprioritize skills, projects, and experience."
+      isOpen={isOpen}
+      onToggle={onToggle}
+    >
       <label className="field-label">Target Job Description</label>
       <textarea
         className="field-textarea"
@@ -41,6 +41,6 @@ export default function JobMatchPanel({
           )}
         </div>
       </div>
-    </section>
+    </CollapsibleCard>
   );
 }
