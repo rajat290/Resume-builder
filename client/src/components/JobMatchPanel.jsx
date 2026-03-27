@@ -1,4 +1,5 @@
 import CollapsibleCard from "./CollapsibleCard";
+import SuggestionCards from "./SuggestionCards";
 
 export default function JobMatchPanel({
   jobDescription,
@@ -8,6 +9,8 @@ export default function JobMatchPanel({
   onTransform,
   onApplyTransformation,
   transformationResult,
+  suggestionCards,
+  onSuggestionAction,
   isAnalyzing,
   isTransforming,
   isOpen,
@@ -67,6 +70,17 @@ export default function JobMatchPanel({
           )}
         </div>
       </div>
+
+      {suggestionCards?.length ? (
+        <div className="mt-6">
+          <p className="field-label">AI Suggestions</p>
+          <SuggestionCards
+            suggestions={suggestionCards}
+            onPrimaryAction={onSuggestionAction}
+            hasTransformation={Boolean(transformationResult)}
+          />
+        </div>
+      ) : null}
 
       {transformationResult && (
         <div className="mt-6 space-y-4 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
