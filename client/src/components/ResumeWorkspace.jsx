@@ -15,6 +15,8 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
   const [jobDescription, setJobDescription] = useState("");
   const [keywords, setKeywords] = useState([]);
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [isTransforming, setIsTransforming] = useState(false);
+  const [transformationResult, setTransformationResult] = useState(null);
   const [leftPanels, setLeftPanels] = useState({
     import: true,
     analyzer: true
@@ -93,6 +95,38 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
     }
   };
 
+  const handleTransform = async () => {
+    if (!jobDescription.trim()) {
+      return;
+    }
+
+    setIsTransforming(true);
+    try {
+      const response = await fetch(`${API_URL}/resume/transform`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          jobDescription,
+          resume
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Transformation failed");
+      }
+
+      setKeywords(data.keywords || []);
+      setTransformationResult(data);
+    } catch (error) {
+      console.error("Failed to transform resume", error);
+    } finally {
+      setIsTransforming(false);
+    }
+  };
+
   const handleDownload = () => {
     if (!resumeRef.current) {
       return;
@@ -119,6 +153,15 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
 
   const handleImportedResume = (importedResume) => {
     setResume(normalizeResumeData(importedResume));
+    setTransformationResult(null);
+  };
+
+  const handleApplyTransformation = () => {
+    if (!transformationResult?.transformedResume) {
+      return;
+    }
+
+    setResume(normalizeResumeData(transformationResult.transformedResume));
   };
 
   return (
@@ -178,6 +221,12 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
               jobDescription={jobDescription}
               onJobDescriptionChange={setJobDescription}
               keywords={keywords}
+              onAnalyze={handleOptimize}
+              onTransform={handleTransform}
+              onApplyTransformation={handleApplyTransformation}
+              transformationResult={transformationResult}
+              isAnalyzing={isOptimizing}
+              isTransforming={isTransforming}
               isOpen={leftPanels.analyzer}
               onToggle={() => toggleLeftPanel("analyzer")}
             />
