@@ -7,7 +7,7 @@ import AtsDetailedTemplate from "../templates/AtsDetailedTemplate";
 import AtsMinimalTemplate from "../templates/AtsMinimalTemplate";
 import AtsSerifTemplate from "../templates/AtsSerifTemplate";
 
-const templateMap = {
+export const templateMap = {
   classic: ClassicTemplate,
   sidebar: SidebarTemplate,
   compact: CompactTemplate,

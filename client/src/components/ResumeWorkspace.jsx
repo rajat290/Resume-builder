@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import html2pdf from "html2pdf.js";
 import JobMatchPanel from "./JobMatchPanel";
+import ResumeComparison from "./ResumeComparison";
 import ResumeEditor from "./ResumeEditor";
 import ResumeImportPanel from "./ResumeImportPanel";
 import ResumePreview from "./ResumePreview";
@@ -23,6 +24,7 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
   });
   const [mobileView, setMobileView] = useState("editor");
   const [isUploadingResume, setIsUploadingResume] = useState(false);
+  const [comparisonSourceResume, setComparisonSourceResume] = useState(null);
   const resumeRef = useRef(null);
   const resumeUploadRef = useRef(null);
 
@@ -101,6 +103,7 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
     }
 
     setIsTransforming(true);
+    setComparisonSourceResume(structuredClone(resume));
     try {
       const response = await fetch(`${API_URL}/resume/transform`, {
         method: "POST",
@@ -154,6 +157,7 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
   const handleImportedResume = (importedResume) => {
     setResume(normalizeResumeData(importedResume));
     setTransformationResult(null);
+    setComparisonSourceResume(null);
   };
 
   const handleApplyTransformation = () => {
@@ -234,11 +238,19 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
           </div>
 
           <div className={mobileView === "editor" ? "hidden lg:block" : ""}>
-            <ResumePreview
-              resume={resume}
-              selectedTemplate={selectedTemplate}
-              resumeRef={resumeRef}
-            />
+            {transformationResult?.transformedResume && comparisonSourceResume ? (
+              <ResumeComparison
+                originalResume={comparisonSourceResume}
+                rewrittenResume={normalizeResumeData(transformationResult.transformedResume)}
+                selectedTemplate={selectedTemplate}
+              />
+            ) : (
+              <ResumePreview
+                resume={resume}
+                selectedTemplate={selectedTemplate}
+                resumeRef={resumeRef}
+              />
+            )}
           </div>
         </div>
       </div>
