@@ -27,11 +27,54 @@ const sectionDefaults = {
   education: false
 };
 
-export default function ResumeEditor({ resume, setResume }) {
-  const [openSections, setOpenSections] = useState(sectionDefaults);
+const sectionConfig = [
+  {
+    key: "personal",
+    title: "Personal Information",
+    description: "Add contact details and a short introduction."
+  },
+  {
+    key: "skills",
+    title: "Skills",
+    description: "Organize skills by category like Frontend, Backend, Cloud, or Tools."
+  },
+  {
+    key: "experience",
+    title: "Experience",
+    description: "Add work history with impact bullets. Rich formatting is supported in each bullet."
+  },
+  {
+    key: "projects",
+    title: "Projects",
+    description: "Add project highlights with links, stack, and styled descriptions."
+  },
+  {
+    key: "education",
+    title: "Education",
+    description: "Add academic details and optional notes."
+  }
+];
+
+export default function ResumeEditor({
+  resume,
+  setResume,
+  mode = "desktop",
+  openSection,
+  onSectionChange
+}) {
+  const [localOpenSections, setLocalOpenSections] = useState(sectionDefaults);
+  const isMobileMode = mode === "mobile";
+
+  const isSectionOpen = (section) =>
+    isMobileMode ? openSection === section : Boolean(localOpenSections[section]);
 
   const toggleSection = (section) => {
-    setOpenSections((current) => ({
+    if (isMobileMode) {
+      onSectionChange?.(openSection === section ? null : section);
+      return;
+    }
+
+    setLocalOpenSections((current) => ({
       ...current,
       [section]: !current[section]
     }));
@@ -185,17 +228,21 @@ export default function ResumeEditor({ resume, setResume }) {
     [resume.skills]
   );
 
+  const cardClass = isMobileMode ? "space-y-4" : "space-y-6";
+  const sectionGridClass = isMobileMode ? "grid gap-4" : "grid gap-4 md:grid-cols-2";
+  const stackActionClass = isMobileMode ? "mt-4 grid gap-3" : "mt-4 flex gap-3";
+
   return (
-    <div className="space-y-6">
+    <div className={cardClass}>
       <CollapsibleCard
-        title="Personal Information"
-        description="Add contact details and a short introduction."
-        isOpen={openSections.personal}
+        title={sectionConfig[0].title}
+        description={sectionConfig[0].description}
+        isOpen={isSectionOpen("personal")}
         onToggle={() => toggleSection("personal")}
       >
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className={sectionGridClass}>
           {personalFields.map(([field, label, richText]) => (
-            <div key={field} className={field === "title" ? "md:col-span-2" : ""}>
+            <div key={field} className={!isMobileMode && field === "title" ? "md:col-span-2" : ""}>
               {richText ? (
                 <RichTextField
                   label={label}
@@ -208,6 +255,7 @@ export default function ResumeEditor({ resume, setResume }) {
                   <label className="field-label">{label}</label>
                   <input
                     className="field-input"
+                    placeholder={label}
                     value={resume.personalInfo[field]}
                     onChange={(event) => updatePersonalInfo(field, event.target.value)}
                   />
@@ -222,29 +270,29 @@ export default function ResumeEditor({ resume, setResume }) {
             label="Professional Summary"
             value={resume.personalInfo.summary}
             onChange={(value) => updatePersonalInfo("summary", value)}
-            rows={5}
+            rows={isMobileMode ? 4 : 5}
           />
         </div>
       </CollapsibleCard>
 
       <CollapsibleCard
-        title="Skills"
-        description="Organize skills by category like Frontend, Backend, Cloud, or Tools."
-        isOpen={openSections.skills}
+        title={sectionConfig[1].title}
+        description={sectionConfig[1].description}
+        isOpen={isSectionOpen("skills")}
         onToggle={() => toggleSection("skills")}
         actions={
           <button type="button" className="pill-button" onClick={addSkillGroup}>
-            Add category
+            + Add category
           </button>
         }
       >
         <p className="mb-4 text-sm text-slate-500">
-          {resume.skills.length} categories • {groupedSkillCount} skills total
+          {resume.skills.length} categories, {groupedSkillCount} skills total
         </p>
         <div className="space-y-4">
           {resume.skills.map((group, groupIndex) => (
             <div key={`${group.category}-${groupIndex}`} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-              <div className="mb-4 grid gap-3 md:grid-cols-[1fr_auto]">
+              <div className={isMobileMode ? "mb-4 grid gap-3" : "mb-4 grid gap-3 md:grid-cols-[1fr_auto]"}>
                 <input
                   className="field-input"
                   placeholder="Category name"
@@ -265,7 +313,7 @@ export default function ResumeEditor({ resume, setResume }) {
                 {group.items.map((skill, skillIndex) => (
                   <div
                     key={`${skill.name}-${skillIndex}`}
-                    className="grid gap-3 md:grid-cols-[1.3fr_1fr_auto]"
+                    className={isMobileMode ? "grid gap-3" : "grid gap-3 md:grid-cols-[1.3fr_1fr_auto]"}
                   >
                     <input
                       className="field-input"
@@ -301,7 +349,7 @@ export default function ResumeEditor({ resume, setResume }) {
                 className="pill-button mt-4"
                 onClick={() => addSkillToGroup(groupIndex)}
               >
-                Add skill
+                + Add skill
               </button>
             </div>
           ))}
@@ -309,20 +357,20 @@ export default function ResumeEditor({ resume, setResume }) {
       </CollapsibleCard>
 
       <CollapsibleCard
-        title="Experience"
-        description="Add work history with impact bullets. Rich formatting is supported in each bullet."
-        isOpen={openSections.experience}
+        title={sectionConfig[2].title}
+        description={sectionConfig[2].description}
+        isOpen={isSectionOpen("experience")}
         onToggle={() => toggleSection("experience")}
         actions={
           <button type="button" className="pill-button" onClick={() => addItem("experience", createExperience)}>
-            Add experience
+            + Add experience
           </button>
         }
       >
         <div className="space-y-4">
           {resume.experience.map((experience, index) => (
             <div key={`${experience.company}-${index}`} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-              <div className="mb-3 grid gap-3 md:grid-cols-2">
+              <div className={isMobileMode ? "mb-3 grid gap-3" : "mb-3 grid gap-3 md:grid-cols-2"}>
                 <input
                   className="field-input"
                   placeholder="Company"
@@ -377,9 +425,9 @@ export default function ResumeEditor({ resume, setResume }) {
                 ))}
               </div>
 
-              <div className="mt-4 flex gap-3">
+              <div className={stackActionClass}>
                 <button type="button" className="pill-button" onClick={() => addAchievement(index)}>
-                  Add bullet
+                  + Add bullet
                 </button>
                 <button
                   type="button"
@@ -395,13 +443,13 @@ export default function ResumeEditor({ resume, setResume }) {
       </CollapsibleCard>
 
       <CollapsibleCard
-        title="Projects"
-        description="Add project highlights with links, stack, and styled descriptions."
-        isOpen={openSections.projects}
+        title={sectionConfig[3].title}
+        description={sectionConfig[3].description}
+        isOpen={isSectionOpen("projects")}
         onToggle={() => toggleSection("projects")}
         actions={
           <button type="button" className="pill-button" onClick={() => addItem("projects", createProject)}>
-            Add project
+            + Add project
           </button>
         }
       >
@@ -451,13 +499,13 @@ export default function ResumeEditor({ resume, setResume }) {
       </CollapsibleCard>
 
       <CollapsibleCard
-        title="Education"
-        description="Add academic details and optional notes."
-        isOpen={openSections.education}
+        title={sectionConfig[4].title}
+        description={sectionConfig[4].description}
+        isOpen={isSectionOpen("education")}
         onToggle={() => toggleSection("education")}
         actions={
           <button type="button" className="pill-button" onClick={() => addItem("education", createEducation)}>
-            Add education
+            + Add education
           </button>
         }
       >
@@ -480,7 +528,7 @@ export default function ResumeEditor({ resume, setResume }) {
                   updateListItem("education", index, "degree", event.target.value)
                 }
               />
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className={isMobileMode ? "grid gap-3" : "grid gap-3 md:grid-cols-2"}>
                 <input
                   className="field-input"
                   placeholder="Start year"

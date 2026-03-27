@@ -1,4 +1,13 @@
-import { CheckCircle2, FileCheck2, Sparkles, Star, Zap } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  FileCheck2,
+  SearchCheck,
+  Sparkles,
+  Star,
+  TrendingUp,
+  Zap
+} from "lucide-react";
 
 const steps = [
   {
@@ -39,24 +48,44 @@ const features = [
 ];
 
 const trustStats = [
-  { value: "1000+", label: "Developers using it" },
-  { value: "4.8/5", label: "Average satisfaction" },
-  { value: "< 60s", label: "To build a tailored version" }
+  { value: "1000+", label: "Resumes optimized" },
+  { value: "4.8/5", label: "Average user rating" },
+  { value: "< 2 min", label: "To tailor a resume" }
+];
+
+const proofPoints = [
+  "No signup required",
+  "ATS-friendly PDF export",
+  "Built for fast job applications"
+];
+
+const companyStrip = ["Google", "Amazon", "TCS", "Infosys", "Accenture", "Startups"];
+
+const beforePoints = [
+  "Generic summary with no target role",
+  "Missing backend and ATS keywords",
+  "Weak bullet phrasing with low recruiter impact"
+];
+
+const afterPoints = [
+  "Summary rewritten for the exact job opening",
+  "Missing keywords surfaced and matched where relevant",
+  "Experience reframed to highlight transferable backend work"
 ];
 
 export default function LandingPage({ onPrimaryCta, onSecondaryCta }) {
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,_#f8fbff_0%,_#eef5fb_46%,_#ffffff_100%)] text-slate-900">
+    <main className="min-h-screen bg-[linear-gradient(180deg,_#f8fbff_0%,_#edf5ff_44%,_#ffffff_100%)] text-slate-900">
       <section className="relative overflow-hidden">
-        <div className="absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(circle_at_top_right,_rgba(14,165,233,0.18),_transparent_34%),radial-gradient(circle_at_top_left,_rgba(34,197,94,0.14),_transparent_32%)]" />
+        <div className="absolute inset-x-0 top-0 h-[640px] bg-[radial-gradient(circle_at_top_left,_rgba(37,99,235,0.16),_transparent_32%),radial-gradient(circle_at_top_right,_rgba(22,163,74,0.12),_transparent_26%)]" />
         <div className="relative mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <header className="flex flex-col gap-4 rounded-[2rem] border border-white/70 bg-white/80 px-5 py-4 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <header className="flex flex-col gap-4 rounded-[2rem] border border-white/70 bg-white/85 px-5 py-4 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-600">
                 Smart Resume Builder
               </p>
               <p className="mt-1 text-sm text-slate-500">
-                Customize your resume for every job in seconds.
+                AI resume optimizer for ATS and recruiters.
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -72,26 +101,27 @@ export default function LandingPage({ onPrimaryCta, onSecondaryCta }) {
                 onClick={onPrimaryCta}
                 className="rounded-full bg-sky-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-700"
               >
-                Create Resume
+                Optimize My Resume
               </button>
             </div>
           </header>
 
-          <div className="grid gap-12 py-14 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:py-20">
+          <div className="grid gap-12 py-14 lg:grid-cols-[0.98fr_1.02fr] lg:items-center lg:py-20">
             <div className="max-w-2xl">
               <p className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
                 <Star size={14} className="fill-current" />
-                No signup required to try
+                AI Resume Optimizer
               </p>
               <h1 className="mt-6 font-display text-4xl leading-tight text-slate-950 sm:text-5xl lg:text-6xl">
-                Build Job-Winning Resumes in Seconds
+                Optimize Your Resume for ATS and Recruiters in Seconds
               </h1>
-              <p className="mt-5 max-w-xl text-base leading-8 text-slate-600 sm:text-lg">
-                Use AI to tailor your resume for each job description and increase
-                your chances of getting shortlisted.
+              <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
+                Upload your resume, paste any job description, and get a tailored
+                version with stronger keywords, sharper positioning, and a better
+                chance of getting shortlisted.
               </p>
               <p className="mt-4 text-lg font-semibold text-slate-800">
-                Stop sending the same resume everywhere. Customize it in seconds.
+                Stop sending the same resume everywhere.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -100,7 +130,7 @@ export default function LandingPage({ onPrimaryCta, onSecondaryCta }) {
                   onClick={onPrimaryCta}
                   className="rounded-full bg-sky-600 px-6 py-4 text-base font-semibold text-white transition hover:bg-sky-700"
                 >
-                  Create Resume
+                  Optimize My Resume
                 </button>
                 <button
                   type="button"
@@ -109,6 +139,17 @@ export default function LandingPage({ onPrimaryCta, onSecondaryCta }) {
                 >
                   Try Demo
                 </button>
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                {proofPoints.map((item) => (
+                  <span
+                    key={item}
+                    className="rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-slate-600 shadow-[0_10px_20px_rgba(15,23,42,0.05)]"
+                  >
+                    {item}
+                  </span>
+                ))}
               </div>
 
               <div className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -125,98 +166,33 @@ export default function LandingPage({ onPrimaryCta, onSecondaryCta }) {
             </div>
 
             <div className="relative">
-              <div className="absolute -left-4 top-8 hidden h-28 w-28 rounded-full bg-emerald-200/40 blur-3xl md:block" />
-              <div className="absolute -right-8 bottom-10 hidden h-36 w-36 rounded-full bg-sky-200/50 blur-3xl md:block" />
-              <div className="relative rounded-[2.25rem] border border-sky-100 bg-white p-4 shadow-[0_30px_100px_rgba(15,23,42,0.14)] sm:p-5">
-                <div className="rounded-[1.75rem] bg-slate-950 p-4 text-white">
-                  <div className="flex items-center justify-between gap-3">
+              <div className="absolute -left-6 top-10 hidden h-32 w-32 rounded-full bg-emerald-200/40 blur-3xl md:block" />
+              <div className="absolute -right-10 bottom-10 hidden h-40 w-40 rounded-full bg-sky-200/50 blur-3xl md:block" />
+              <div className="relative rounded-[2.4rem] border border-sky-100 bg-white p-4 shadow-[0_32px_100px_rgba(15,23,42,0.14)] sm:p-5">
+                <div className="rounded-[1.9rem] bg-slate-950 p-4 text-white sm:p-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="text-xs uppercase tracking-[0.22em] text-sky-300">
-                        Resume Match Dashboard
+                        AI Resume Optimizer
                       </p>
-                      <h2 className="mt-2 text-xl font-semibold">
-                        Frontend Engineer at ProductFlow
+                      <h2 className="mt-2 text-xl font-semibold sm:text-2xl">
+                        Backend Engineer at ProductFlow
                       </h2>
                     </div>
-                    <div className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300">
-                      Match score 92%
+                    <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 px-3 py-2 text-xs font-semibold text-emerald-300">
+                      <TrendingUp size={14} />
+                      ATS Score 94
                     </div>
                   </div>
 
-                  <div className="mt-5 grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
-                    <div className="rounded-[1.5rem] bg-white p-4 text-slate-900">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-600">
-                            Live Resume Preview
-                          </p>
-                          <h3 className="mt-2 text-2xl font-bold">Aarav Sharma</h3>
-                          <p className="mt-1 text-sm text-slate-500">
-                            React Developer | aarav.dev@email.com | Bengaluru
-                          </p>
-                        </div>
-                        <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                          ATS Ready
-                        </div>
-                      </div>
-
-                      <div className="mt-5 space-y-4 text-sm">
-                        <div>
-                          <p className="border-b border-slate-200 pb-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
-                            Summary
-                          </p>
-                          <p className="mt-2 leading-6 text-slate-600">
-                            Frontend developer customizing resumes for each role to improve interview response rates.
-                          </p>
-                        </div>
-                        <div>
-                          <p className="border-b border-slate-200 pb-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
-                            Skills
-                          </p>
-                          <p className="mt-2 leading-6 text-slate-600">
-                            React, Next.js, Tailwind CSS, Node.js, REST APIs
-                          </p>
-                        </div>
-                        <div>
-                          <p className="border-b border-slate-200 pb-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
-                            Experience
-                          </p>
-                          <ul className="mt-2 space-y-2 text-slate-600">
-                            <li>Built faster hiring workflows with React dashboards.</li>
-                            <li>Improved recruiter screening efficiency with structured resume data.</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-
+                  <div className="mt-5 grid gap-4 xl:grid-cols-[0.88fr_1.12fr]">
                     <div className="space-y-4">
-                      <div className="rounded-[1.5rem] bg-slate-900/70 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
-                          AI Suggestions
-                        </p>
-                        <div className="mt-3 space-y-3">
-                          <div className="rounded-2xl bg-white/5 p-3">
-                            <p className="text-sm font-semibold">Prioritize React and Next.js</p>
-                            <p className="mt-1 text-sm text-slate-300">
-                              These keywords appear multiple times in the job description.
-                            </p>
-                          </div>
-                          <div className="rounded-2xl bg-emerald-500/10 p-3">
-                            <p className="text-sm font-semibold text-emerald-300">
-                              Relevant project highlighted
-                            </p>
-                            <p className="mt-1 text-sm text-slate-300">
-                              Dashboard project moved higher to match recruiter intent.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="rounded-[1.5rem] bg-white/10 p-4">
+                      <div className="rounded-[1.5rem] bg-white/6 p-4">
                         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
                           Job Description Match
                         </p>
                         <div className="mt-3 flex flex-wrap gap-2">
-                          {["React", "Next.js", "TypeScript", "APIs", "UI"].map((tag) => (
+                          {["REST APIs", "Backend", "Scalability", "Node.js", "Performance"].map((tag) => (
                             <span
                               key={tag}
                               className="rounded-full bg-white/10 px-3 py-2 text-xs font-semibold text-slate-200"
@@ -226,8 +202,212 @@ export default function LandingPage({ onPrimaryCta, onSecondaryCta }) {
                           ))}
                         </div>
                       </div>
+
+                      <div className="rounded-[1.5rem] bg-white/6 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                          Smart Suggestions
+                        </p>
+                        <div className="mt-3 space-y-3">
+                          <div className="rounded-2xl bg-white/5 p-3">
+                            <p className="text-sm font-semibold">Add 4 missing backend keywords</p>
+                            <p className="mt-1 text-sm text-slate-300">
+                              Improve recruiter and ATS match for this role.
+                            </p>
+                          </div>
+                          <div className="rounded-2xl bg-emerald-500/10 p-3">
+                            <p className="text-sm font-semibold text-emerald-300">
+                              Rewrite weak experience bullets
+                            </p>
+                            <p className="mt-1 text-sm text-slate-300">
+                              Focus more on APIs, scalability, and impact.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-[1.5rem] bg-white p-4 text-slate-900">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-600">
+                            Live Resume Preview
+                          </p>
+                          <h3 className="mt-2 text-2xl font-bold">Aarav Sharma</h3>
+                          <p className="mt-1 text-sm text-slate-500">
+                            Backend Developer | aarav.dev@email.com | Bengaluru
+                          </p>
+                        </div>
+                        <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                          Recruiter Ready
+                        </div>
+                      </div>
+
+                      <div className="mt-5 space-y-4 text-sm">
+                        <div>
+                          <p className="border-b border-slate-200 pb-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                            Summary
+                          </p>
+                          <p className="mt-2 leading-6 text-slate-600">
+                            Backend-focused engineer with experience building APIs,
+                            optimizing workflows, and shipping reliable product features.
+                          </p>
+                        </div>
+                        <div>
+                          <p className="border-b border-slate-200 pb-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                            Score Breakdown
+                          </p>
+                          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                            <div className="rounded-2xl bg-slate-50 p-3">
+                              <p className="text-xs uppercase tracking-[0.15em] text-slate-400">
+                                ATS
+                              </p>
+                              <p className="mt-1 text-lg font-bold text-slate-900">96</p>
+                            </div>
+                            <div className="rounded-2xl bg-slate-50 p-3">
+                              <p className="text-xs uppercase tracking-[0.15em] text-slate-400">
+                                Keywords
+                              </p>
+                              <p className="mt-1 text-lg font-bold text-slate-900">91</p>
+                            </div>
+                            <div className="rounded-2xl bg-slate-50 p-3">
+                              <p className="text-xs uppercase tracking-[0.15em] text-slate-400">
+                                Impact
+                              </p>
+                              <p className="mt-1 text-lg font-bold text-slate-900">88</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="border-b border-slate-200 pb-1 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                            Experience
+                          </p>
+                          <ul className="mt-2 space-y-2 text-slate-600">
+                            <li>Built recruiter workflow APIs that reduced manual review effort.</li>
+                            <li>Improved platform performance and resume processing speed.</li>
+                          </ul>
+                        </div>
+                      </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-[1.75rem] border border-slate-200 bg-white/80 px-5 py-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
+            <div className="flex flex-wrap items-center gap-4 text-sm font-semibold text-slate-400">
+              <span className="uppercase tracking-[0.22em]">Trusted by job seekers targeting</span>
+              {companyStrip.map((company) => (
+                <span key={company} className="text-slate-500">
+                  {company}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+        <div className="rounded-[2.25rem] border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
+          <div className="max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-600">
+              Before vs After
+            </p>
+            <h2 className="mt-3 font-display text-3xl text-slate-950 sm:text-4xl">
+              See What Changes When Your Resume Is Written for the Job
+            </h2>
+            <p className="mt-4 text-base leading-8 text-slate-600">
+              The experience stays the same. The positioning, keywords, and recruiter
+              impact improve.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-5 xl:grid-cols-[1fr_auto_1fr] xl:items-center">
+            <div className="rounded-[1.75rem] border border-amber-200 bg-amber-50/60 p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">
+                    Before
+                  </p>
+                  <h3 className="mt-2 text-2xl font-semibold text-slate-950">
+                    Generic Resume
+                  </h3>
+                </div>
+                <div className="rounded-full bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">
+                  ATS 61
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-[1.4rem] bg-white p-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  Summary
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-500">
+                  JavaScript developer looking for a software role with opportunities to
+                  grow and work on exciting projects.
+                </p>
+
+                <div className="mt-5">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                    Problems
+                  </p>
+                  <ul className="mt-2 space-y-2 text-sm text-slate-600">
+                    {beforePoints.map((item) => (
+                      <li key={item} className="rounded-2xl bg-amber-50 px-3 py-2">
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center">
+              <div className="inline-flex items-center gap-3 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-white shadow-[0_16px_30px_rgba(15,23,42,0.18)]">
+                <ArrowRight size={16} />
+                Score +33
+              </div>
+            </div>
+
+            <div className="rounded-[1.75rem] border border-emerald-200 bg-emerald-50/60 p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">
+                    After
+                  </p>
+                  <h3 className="mt-2 text-2xl font-semibold text-slate-950">
+                    Tailored for the Role
+                  </h3>
+                </div>
+                <div className="rounded-full bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
+                  ATS 94
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-[1.4rem] bg-white p-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  Summary
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Backend-focused engineer with experience building APIs, optimizing
+                  performance, and shipping product workflows aligned to recruiter needs.
+                </p>
+
+                <div className="mt-5">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                    Improvements
+                  </p>
+                  <ul className="mt-2 space-y-2 text-sm text-slate-600">
+                    {afterPoints.map((item) => (
+                      <li
+                        key={item}
+                        className="flex items-start gap-2 rounded-2xl bg-emerald-50 px-3 py-2"
+                      >
+                        <SearchCheck size={16} className="mt-0.5 shrink-0 text-emerald-600" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </div>
@@ -281,7 +461,7 @@ export default function LandingPage({ onPrimaryCta, onSecondaryCta }) {
               onClick={onPrimaryCta}
               className="mt-6 rounded-full bg-sky-600 px-6 py-4 text-base font-semibold text-white transition hover:bg-sky-700"
             >
-              Create Resume
+              Optimize My Resume
             </button>
           </div>
 
