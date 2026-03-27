@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import html2pdf from "html2pdf.js";
+import ConnectionBanner from "./ConnectionBanner";
 import JobMatchPanel from "./JobMatchPanel";
+import ProfilePanel from "./ProfilePanel";
 import ResumeComparison from "./ResumeComparison";
 import ResumeEditor from "./ResumeEditor";
 import ResumeImportPanel from "./ResumeImportPanel";
@@ -17,8 +19,7 @@ import MobileScoreTab from "./mobile/MobileScoreTab";
 import MobileToastHost from "./mobile/MobileToastHost";
 import { emptyResume, hasText, normalizeResumeData } from "../utils/resumeHelpers";
 import { buildResumeScore, buildSuggestionCards } from "../utils/resumeScoring";
-
-const API_URL = "http://localhost:4000/api";
+import { apiFetch, checkApiHealth, isApiConnectionError } from "../utils/api";
 
 export default function ResumeWorkspace({ currentUser, onSignOut }) {
   const [resume, setResume] = useState(emptyResume);
@@ -40,6 +41,10 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
   const [comparisonSourceResume, setComparisonSourceResume] = useState(null);
   const [saveState, setSaveState] = useState("idle");
   const [toast, setToast] = useState(null);
+  const [backendStatus, setBackendStatus] = useState("checking");
+  const [isRetryingBackend, setIsRetryingBackend] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [activityLog, setActivityLog] = useState([]);
   const resumeRef = useRef(null);
   const resumeUploadRef = useRef(null);
 
@@ -55,19 +60,94 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
     [resume, keywords, scoreData, transformationResult]
   );
 
-  useEffect(() => {
-    const loadResume = async () => {
-      try {
-        const response = await fetch(`${API_URL}/resume`);
-        const data = await response.json();
-        setResume(normalizeResumeData(data));
-      } catch (error) {
-        console.error("Failed to load resume", error);
-      }
-    };
+  const addActivity = (title, description) => {
+    setActivityLog((current) => [
+      {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        title,
+        description,
+        timestamp: new Date().toISOString()
+      },
+      ...current
+    ]);
+  };
 
+  const handleApiError = (error, fallbackMessage) => {
+    if (isApiConnectionError(error)) {
+      setBackendStatus("offline");
+      setToast({
+        message: "Backend offline. Start the server and retry.",
+        type: "warning"
+      });
+      return;
+    }
+
+    if (fallbackMessage) {
+      setToast({ message: fallbackMessage, type: "warning" });
+    }
+  };
+
+  const loadResume = async () => {
+    try {
+      const response = await apiFetch("/resume");
+      const data = await response.json();
+      setResume(normalizeResumeData(data));
+      setBackendStatus("online");
+      addActivity(
+        "Resume synced",
+        currentUser?.mode === "demo"
+          ? "Loaded the starter workspace for your current session."
+          : "Loaded your latest saved resume from the backend."
+      );
+      return true;
+    } catch (error) {
+      console.error("Failed to load resume", error);
+      if (isApiConnectionError(error)) {
+        setBackendStatus("offline");
+      }
+      return false;
+    }
+  };
+
+  const retryBackendConnection = async () => {
+    setIsRetryingBackend(true);
+
+    try {
+      const isHealthy = await checkApiHealth();
+      if (!isHealthy) {
+        throw new Error("Backend health check failed.");
+      }
+
+      setBackendStatus("online");
+      const loaded = await loadResume();
+      setToast({
+        message: loaded ? "Backend reconnected" : "Backend reachable",
+        type: "success"
+      });
+    } catch (error) {
+      console.error("Backend retry failed", error);
+      setBackendStatus("offline");
+      setToast({
+        message: "Backend still offline. Run npm run dev and try again.",
+        type: "warning"
+      });
+    } finally {
+      setIsRetryingBackend(false);
+    }
+  };
+
+  useEffect(() => {
     loadResume();
   }, []);
+
+  useEffect(() => {
+    addActivity(
+      "Workspace opened",
+      currentUser?.mode === "demo"
+        ? "Demo mode is active. You can explore the full product without signing in."
+        : "Authenticated workspace is ready for resume editing and optimization."
+    );
+  }, [currentUser?.mode]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -76,35 +156,44 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
     const persistResume = async () => {
       try {
         setSaveState("saving");
-        await fetch(`${API_URL}/resume`, {
+        await apiFetch("/resume", {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json"
-          },
           body: JSON.stringify(resume),
           signal: controller.signal
         });
+        setBackendStatus("online");
         setSaveState("saved");
         timeoutId = window.setTimeout(() => setSaveState("idle"), 2000);
       } catch (error) {
         if (error.name !== "AbortError") {
           console.error("Failed to persist resume", error);
+          if (isApiConnectionError(error)) {
+            setBackendStatus("offline");
+            setToast({
+              message: "Changes saved locally. Backend sync will resume when the server is back.",
+              type: "warning"
+            });
+          }
           setSaveState("idle");
         }
       }
     };
 
-    if (resume.personalInfo.fullName) {
+    if (resume.personalInfo.fullName && backendStatus !== "offline") {
       persistResume();
     }
 
     return () => {
       controller.abort();
       if (timeoutId) {
-        window.clearTimeout(timeoutId);
+      window.clearTimeout(timeoutId);
       }
     };
-  }, [resume]);
+  }, [backendStatus, resume]);
+
+  useEffect(() => {
+    addActivity("Template updated", `Switched preview format to ${selectedTemplate}.`);
+  }, [selectedTemplate]);
 
   useEffect(() => {
     if (!toast) {
@@ -123,11 +212,8 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
     setIsOptimizing(true);
     setMobileTab("score");
     try {
-      const response = await fetch(`${API_URL}/resume/analyze`, {
+      const response = await apiFetch("/resume/analyze", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
         body: JSON.stringify({
           jobDescription,
           resume
@@ -137,10 +223,18 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
       const data = await response.json();
       setKeywords(data.keywords);
       setResume(normalizeResumeData(data.optimizedResume));
+      setBackendStatus("online");
+      addActivity(
+        "Resume optimized",
+        `Updated keyword targeting for the current job description and refreshed the score to ${buildResumeScore(
+          normalizeResumeData(data.optimizedResume),
+          data.keywords
+        ).overall}.`
+      );
       setToast({ message: "Resume optimized", type: "success" });
     } catch (error) {
       console.error("Failed to optimize resume", error);
-      setToast({ message: "Optimization failed", type: "warning" });
+      handleApiError(error, "Optimization failed");
     } finally {
       setIsOptimizing(false);
     }
@@ -154,11 +248,8 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
     setIsTransforming(true);
     setComparisonSourceResume(structuredClone(resume));
     try {
-      const response = await fetch(`${API_URL}/resume/transform`, {
+      const response = await apiFetch("/resume/transform", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
         body: JSON.stringify({
           jobDescription,
           resume
@@ -172,12 +263,17 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
 
       setKeywords(data.keywords || []);
       setTransformationResult(data);
+      setBackendStatus("online");
       setCompareMode("after");
       setMobileTab("compare");
+      addActivity(
+        "AI rewrite generated",
+        "Created a rewritten version aligned to the target role and opened the compare view."
+      );
       setToast({ message: "AI rewrite ready", type: "success" });
     } catch (error) {
       console.error("Failed to transform resume", error);
-      setToast({ message: "Rewrite failed", type: "warning" });
+      handleApiError(error, "Rewrite failed");
     } finally {
       setIsTransforming(false);
     }
@@ -201,6 +297,7 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
       .from(resumeRef.current)
       .save();
 
+    addActivity("Resume downloaded", "Exported the current resume preview as a PDF.");
     setToast({ message: "Resume downloaded", type: "success" });
   };
 
@@ -215,6 +312,10 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
     setResume(normalizeResumeData(importedResume));
     setTransformationResult(null);
     setComparisonSourceResume(null);
+    addActivity(
+      "Resume imported",
+      "Imported an existing resume into the editor for faster customization."
+    );
     setToast({ message: "Resume imported", type: "success" });
   };
 
@@ -225,6 +326,10 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
 
     setResume(normalizeResumeData(transformationResult.transformedResume));
     setMobileTab("preview");
+    addActivity(
+      "Rewrite applied",
+      "Accepted the rewritten resume and moved it into the live preview."
+    );
     setToast({ message: "Rewritten resume applied", type: "success" });
   };
 
@@ -294,8 +399,22 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.14),_transparent_35%),linear-gradient(180deg,_#f5faff_0%,_#eef4fb_50%,_#e7eef8_100%)] px-4 py-5 text-ink md:px-6 lg:px-8">
       <MobileToastHost toast={toast} />
+      <ProfilePanel
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        currentUser={currentUser}
+        activityLog={activityLog}
+        scoreData={scoreData}
+        selectedTemplate={selectedTemplate}
+        onSignOut={onSignOut}
+      />
 
       <div className="mx-auto hidden max-w-[1600px] space-y-6 lg:block">
+        <ConnectionBanner
+          status={backendStatus}
+          onRetry={retryBackendConnection}
+          isRetrying={isRetryingBackend}
+        />
         <TopBar
           selectedTemplate={selectedTemplate}
           onTemplateChange={setSelectedTemplate}
@@ -306,6 +425,7 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
           isUploading={isUploadingResume}
           currentUser={currentUser}
           onSignOut={onSignOut}
+          onOpenProfile={() => setIsProfileOpen(true)}
         />
 
         <ResumeScoreCard scoreData={scoreData} />
@@ -318,6 +438,7 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
               onImportComplete={handleImportedResume}
               externalFileInputRef={resumeUploadRef}
               onFileImportStateChange={setIsUploadingResume}
+              onConnectionError={(error) => handleApiError(error)}
             />
             <JobMatchPanel
               jobDescription={jobDescription}
@@ -360,9 +481,18 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
           title={mobileTitleMap[mobileTab]}
           subtitle={jobDescription.trim() ? "Target role loaded" : "Add a job description to optimize"}
           saveState={saveState}
+          currentUser={currentUser}
+          onOpenProfile={() => setIsProfileOpen(true)}
+          onSignOut={onSignOut}
         />
 
         <div className="mobile-content">
+          <ConnectionBanner
+            status={backendStatus}
+            onRetry={retryBackendConnection}
+            isRetrying={isRetryingBackend}
+          />
+
           {mobileTab === "edit" && (
             <MobileEditTab
               resume={resume}
@@ -374,6 +504,7 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
               resumeUploadRef={resumeUploadRef}
               onImportComplete={handleImportedResume}
               onFileImportStateChange={setIsUploadingResume}
+              onConnectionError={(error) => handleApiError(error)}
             />
           )}
 

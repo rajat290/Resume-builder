@@ -1,19 +1,34 @@
 import { Router } from "express";
 import { resumeSeed } from "../data/resumeSeed.js";
+import { optionalAuth } from "../middleware/auth.js";
 import { extractKeywords, optimizeResume } from "../services/keywordService.js";
+import { getResumeForUser, saveResumeForUser } from "../services/resumeStoreService.js";
 import { transformResumeForJob } from "../services/transformService.js";
 
 const router = Router();
 
 let resumeStore = structuredClone(resumeSeed);
 
-router.get("/", (_req, res) => {
-  res.json(resumeStore);
+router.use(optionalAuth);
+
+router.get("/", async (req, res) => {
+  if (req.user?.id) {
+    const resume = await getResumeForUser(req.user.id);
+    return res.json(resume);
+  }
+
+  return res.json(resumeStore);
 });
 
-router.put("/", (req, res) => {
+router.put("/", async (req, res) => {
   resumeStore = req.body;
-  res.json(resumeStore);
+
+  if (req.user?.id) {
+    const saved = await saveResumeForUser(req.user.id, req.body);
+    return res.json(saved);
+  }
+
+  return res.json(resumeStore);
 });
 
 router.post("/analyze", (req, res) => {

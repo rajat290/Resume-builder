@@ -1,7 +1,8 @@
 import OpenAI from "openai";
+import { env } from "../config/env.js";
 import { extractKeywords } from "./keywordService.js";
 
-const MODEL = process.env.OPENAI_MODEL || "gpt-5.2";
+const MODEL = env.openAiModel;
 
 const stripRichText = (value = "") =>
   String(value).replace(/\[(\/)?(b|i|u|color(?::#[0-9a-fA-F]{3,6})?)\]/g, "");
@@ -494,7 +495,7 @@ ${JSON.stringify(resume)}
 export async function transformResumeForJob(resume, jobDescription) {
   const keywords = extractKeywords(jobDescription);
 
-  if (!process.env.OPENAI_API_KEY) {
+  if (!env.openAiKey) {
     return {
       keywords,
       ...applyFallbackTransformation(resume, jobDescription, keywords)

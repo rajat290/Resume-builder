@@ -11,7 +11,8 @@ export default function MobileEditTab({
   onSectionChange,
   resumeUploadRef,
   onImportComplete,
-  onFileImportStateChange
+  onFileImportStateChange,
+  onConnectionError
 }) {
   return (
     <div className="space-y-4">
@@ -21,6 +22,7 @@ export default function MobileEditTab({
         onImportComplete={onImportComplete}
         externalFileInputRef={resumeUploadRef}
         onFileImportStateChange={onFileImportStateChange}
+        onConnectionError={onConnectionError}
       />
 
       <CollapsibleCard

@@ -1,4 +1,4 @@
-import { Download, Sparkles, Upload } from "lucide-react";
+import { Download, Sparkles, Upload, UserCircle2 } from "lucide-react";
 import { templateOptions } from "../utils/resumeHelpers";
 
 export default function TopBar({
@@ -10,7 +10,8 @@ export default function TopBar({
   isOptimizing,
   isUploading,
   currentUser,
-  onSignOut
+  onSignOut,
+  onOpenProfile
 }) {
   return (
     <div className="rounded-[2rem] border border-slate-200 bg-paper/95 p-5 shadow-panel backdrop-blur md:p-6">
@@ -32,6 +33,16 @@ export default function TopBar({
                 {currentUser.mode === "demo" ? "Demo Mode" : "Google Connected"}
               </span>
               <span className="text-sm text-slate-500">{currentUser.name}</span>
+              {onOpenProfile && (
+                <button
+                  type="button"
+                  onClick={onOpenProfile}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-200 hover:text-sky-700"
+                >
+                  <UserCircle2 size={16} />
+                  Profile
+                </button>
+              )}
               {onSignOut && (
                 <button
                   type="button"

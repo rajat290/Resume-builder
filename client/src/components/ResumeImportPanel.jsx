@@ -1,14 +1,14 @@
 import { useRef, useState } from "react";
 import CollapsibleCard from "./CollapsibleCard";
-
-const API_URL = "http://localhost:4000/api";
+import { apiFetch, isApiConnectionError } from "../utils/api";
 
 export default function ResumeImportPanel({
   isOpen,
   onToggle,
   onImportComplete,
   externalFileInputRef,
-  onFileImportStateChange
+  onFileImportStateChange,
+  onConnectionError
 }) {
   const [pastedText, setPastedText] = useState("");
   const [isImporting, setIsImporting] = useState(false);
@@ -32,11 +32,8 @@ export default function ResumeImportPanel({
     onFileImportStateChange?.(true);
     setMessage("");
     try {
-      const response = await fetch(`${API_URL}/import/text`, {
+      const response = await apiFetch("/import/text", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
         body: JSON.stringify({ text: pastedText })
       });
 
@@ -44,7 +41,12 @@ export default function ResumeImportPanel({
       onImportComplete(data.parsedResume);
       setMessage("Resume text imported into the editor.");
     } catch (error) {
-      setMessage("Could not import the pasted resume text.");
+      if (isApiConnectionError(error)) {
+        onConnectionError?.(error);
+        setMessage("Backend is offline. Start the server and try importing again.");
+      } else {
+        setMessage("Could not import the pasted resume text.");
+      }
     } finally {
       setIsImporting(false);
       onFileImportStateChange?.(false);
@@ -65,7 +67,7 @@ export default function ResumeImportPanel({
       const formData = new FormData();
       formData.append("resume", file);
 
-      const response = await fetch(`${API_URL}/import/file`, {
+      const response = await apiFetch("/import/file", {
         method: "POST",
         body: formData
       });
@@ -78,6 +80,9 @@ export default function ResumeImportPanel({
       onImportComplete(data.parsedResume);
       setMessage("Resume file imported into the editor.");
     } catch (error) {
+      if (isApiConnectionError(error)) {
+        onConnectionError?.(error);
+      }
       setMessage(error.message || "Could not import the uploaded file.");
     } finally {
       setIsImporting(false);

@@ -2,74 +2,99 @@ import { useEffect, useState } from "react";
 import AuthModal from "./components/AuthModal";
 import LandingPage from "./components/LandingPage";
 import ResumeWorkspace from "./components/ResumeWorkspace";
-
-const STORAGE_KEY = "smart-resume-builder-auth";
+import { apiFetch, authStorage, isApiConnectionError } from "./utils/api";
 
 export default function App() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [session, setSession] = useState(null);
+  const [authError, setAuthError] = useState("");
 
   useEffect(() => {
-    const savedSession = window.localStorage.getItem(STORAGE_KEY);
+    const savedSession = authStorage.get();
     if (savedSession) {
-      setSession(JSON.parse(savedSession));
+      setSession(savedSession);
     }
   }, []);
 
   const persistSession = (nextSession) => {
     setSession(nextSession);
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextSession));
+    authStorage.set(nextSession);
   };
 
-  const handleGoogleContinue = () => {
+  const handleGoogleCredential = async (credential) => {
     setIsAuthenticating(true);
+    setAuthError("");
 
-    window.setTimeout(() => {
-      const nextSession = {
-        provider: "google",
-        name: "Google User",
-        mode: "authenticated"
-      };
+    try {
+      const response = await apiFetch("/auth/google", {
+        method: "POST",
+        body: JSON.stringify({ credential })
+      });
 
-      persistSession(nextSession);
-      setIsAuthenticating(false);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Google authentication failed.");
+      }
+
+      persistSession({
+        token: data.token,
+        user: data.user
+      });
       setAuthModalOpen(false);
-    }, 900);
+    } catch (error) {
+      console.error("Google sign-in failed", error);
+      setAuthError(
+        isApiConnectionError(error)
+          ? "The backend server is offline. Start the API and try Google sign-in again."
+          : error.message || "Google sign-in failed."
+      );
+    } finally {
+      setIsAuthenticating(false);
+    }
   };
 
   const handleDemoContinue = () => {
     const nextSession = {
-      provider: "demo",
-      name: "Demo User",
-      mode: "demo"
+      token: null,
+      user: {
+        provider: "demo",
+        name: "Demo User",
+        mode: "demo"
+      }
     };
 
     persistSession(nextSession);
     setAuthModalOpen(false);
+    setAuthError("");
   };
 
   const handleSignOut = () => {
     setSession(null);
-    window.localStorage.removeItem(STORAGE_KEY);
+    authStorage.clear();
   };
 
   if (session) {
-    return <ResumeWorkspace currentUser={session} onSignOut={handleSignOut} />;
+    return <ResumeWorkspace currentUser={session.user} onSignOut={handleSignOut} />;
   }
 
   return (
     <>
       <LandingPage
-        onPrimaryCta={() => setAuthModalOpen(true)}
+        onPrimaryCta={() => {
+          setAuthError("");
+          setAuthModalOpen(true);
+        }}
         onSecondaryCta={handleDemoContinue}
       />
       <AuthModal
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
-        onGoogleContinue={handleGoogleContinue}
+        onGoogleCredential={handleGoogleCredential}
         onDemoContinue={handleDemoContinue}
         isLoading={isAuthenticating}
+        clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
+        errorMessage={authError}
       />
     </>
   );
