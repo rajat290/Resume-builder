@@ -1,133 +1,142 @@
 import React from "react";
 
-const FORMATS = {
-  bold: { open: "[b]", close: "[/b]" },
-  italic: { open: "[i]", close: "[/i]" },
-  underline: { open: "[u]", close: "[/u]" }
-};
+const ALLOWED_TAGS = new Set(["p", "strong", "em", "u", "span", "br", "ul", "ol", "li"]);
+const HEX_COLOR_PATTERN = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
 
-export function applyTagToSelection(value, selectionStart, selectionEnd, format, color) {
-  const selectedValue = value.slice(selectionStart, selectionEnd);
-
-  if (format === "color") {
-    const open = `[color:${color || "#000000"}]`;
-    const close = "[/color]";
-    const nextValue =
-      value.slice(0, selectionStart) + open + selectedValue + close + value.slice(selectionEnd);
-
-    return {
-      value: nextValue,
-      selectionStart: selectionStart + open.length,
-      selectionEnd: selectionStart + open.length + selectedValue.length
-    };
+function sanitizeNode(node) {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent || "";
   }
 
-  const tag = FORMATS[format];
-  if (!tag) {
-    return {
-      value,
-      selectionStart,
-      selectionEnd
-    };
+  if (node.nodeType !== Node.ELEMENT_NODE) {
+    return "";
   }
 
-  const nextValue =
-    value.slice(0, selectionStart) + tag.open + selectedValue + tag.close + value.slice(selectionEnd);
+  const tag = node.tagName.toLowerCase();
+  if (!ALLOWED_TAGS.has(tag)) {
+    return Array.from(node.childNodes).map(sanitizeNode).join("");
+  }
 
-  return {
-    value: nextValue,
-    selectionStart: selectionStart + tag.open.length,
-    selectionEnd: selectionStart + tag.open.length + selectedValue.length
-  };
+  const children = Array.from(node.childNodes).map(sanitizeNode).join("");
+  if (tag === "br") {
+    return "<br />";
+  }
+
+  if (tag === "span") {
+    const color = node.style?.color?.trim() || "";
+    if (HEX_COLOR_PATTERN.test(color)) {
+      return `<span style="color:${color}">${children}</span>`;
+    }
+    return `<span>${children}</span>`;
+  }
+
+  return `<${tag}>${children}</${tag}>`;
+}
+
+function sanitizeHtml(value = "") {
+  const text = typeof value === "string" ? value : "";
+  if (!text.trim()) {
+    return "";
+  }
+
+  if (typeof window === "undefined" || typeof DOMParser === "undefined") {
+    return text.replace(/<[^>]+>/g, "");
+  }
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(text, "text/html");
+  return Array.from(doc.body.childNodes).map(sanitizeNode).join("");
+}
+
+function parseStyle(styleText = "") {
+  const style = {};
+  const colorMatch = styleText.match(/color:\s*(#[0-9a-f]{3,6})/i);
+
+  if (colorMatch && HEX_COLOR_PATTERN.test(colorMatch[1])) {
+    style.color = colorMatch[1];
+  }
+
+  return style;
+}
+
+function mapNodeToReact(node, key) {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent;
+  }
+
+  if (node.nodeType !== Node.ELEMENT_NODE) {
+    return null;
+  }
+
+  const tag = node.tagName.toLowerCase();
+  const children = Array.from(node.childNodes).map((child, index) =>
+    mapNodeToReact(child, `${key}-${index}`)
+  );
+
+  if (tag === "br") {
+    return <br key={key} />;
+  }
+
+  if (tag === "span") {
+    return (
+      <span key={key} style={parseStyle(node.getAttribute("style") || "")}>
+        {children}
+      </span>
+    );
+  }
+
+  if (tag === "p") {
+    return (
+      <React.Fragment key={key}>
+        {children}
+        <br />
+      </React.Fragment>
+    );
+  }
+
+  if (tag === "ul" || tag === "ol") {
+    const ListTag = tag;
+    return <ListTag key={key}>{children}</ListTag>;
+  }
+
+  if (tag === "li") {
+    return <li key={key}>{children}</li>;
+  }
+
+  const Tag = tag;
+  return <Tag key={key}>{children}</Tag>;
 }
 
 export function renderRichText(value, keyPrefix = "rt") {
-  const text = typeof value === "string" ? value : "";
+  const sanitized = sanitizeHtml(value);
+  if (!sanitized) {
+    return "";
+  }
 
-  const parse = (input, activeStyles = {}, path = "0") => {
-    const nodes = [];
-    let cursor = 0;
+  if (typeof window === "undefined" || typeof DOMParser === "undefined") {
+    return sanitized.replace(/<[^>]+>/g, "");
+  }
 
-    while (cursor < input.length) {
-      const tagStart = input.indexOf("[", cursor);
-      if (tagStart === -1) {
-        const remainder = input.slice(cursor);
-        if (remainder) {
-          nodes.push(
-            <span key={`${keyPrefix}-${path}-${nodes.length}`} style={activeStyles}>
-              {remainder}
-            </span>
-          );
-        }
-        break;
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(sanitized, "text/html");
+  const nodes = Array.from(doc.body.childNodes).map((node, index) =>
+    mapNodeToReact(node, `${keyPrefix}-${index}`)
+  );
+
+  if (
+    nodes.length &&
+    React.isValidElement(nodes[nodes.length - 1]) &&
+    nodes[nodes.length - 1].type === React.Fragment
+  ) {
+    const lastNode = nodes[nodes.length - 1];
+    if (Array.isArray(lastNode.props.children)) {
+      const trimmedChildren = [...lastNode.props.children];
+      if (trimmedChildren[trimmedChildren.length - 1]?.type === "br") {
+        trimmedChildren.pop();
+        nodes[nodes.length - 1] = <React.Fragment key={lastNode.key}>{trimmedChildren}</React.Fragment>;
       }
-
-      if (tagStart > cursor) {
-        const plain = input.slice(cursor, tagStart);
-        nodes.push(
-          <span key={`${keyPrefix}-${path}-${nodes.length}`} style={activeStyles}>
-            {plain}
-          </span>
-        );
-      }
-
-      const tagEnd = input.indexOf("]", tagStart);
-      if (tagEnd === -1) {
-        const tail = input.slice(tagStart);
-        nodes.push(
-          <span key={`${keyPrefix}-${path}-${nodes.length}`} style={activeStyles}>
-            {tail}
-          </span>
-        );
-        break;
-      }
-
-      const tagContent = input.slice(tagStart + 1, tagEnd);
-      const closingTag = tagContent.startsWith("/");
-      if (closingTag) {
-        cursor = tagEnd + 1;
-        continue;
-      }
-
-      const matcher = tagContent.match(/^(b|i|u|color(?::#[0-9a-fA-F]{3,6})?)$/);
-      if (!matcher) {
-        nodes.push(
-          <span key={`${keyPrefix}-${path}-${nodes.length}`} style={activeStyles}>
-            {input.slice(tagStart, tagEnd + 1)}
-          </span>
-        );
-        cursor = tagEnd + 1;
-        continue;
-      }
-
-      const tagName = matcher[1];
-      const closingMarker = tagName.startsWith("color") ? "[/color]" : `[/${tagName}]`;
-      const closingIndex = input.indexOf(closingMarker, tagEnd + 1);
-
-      if (closingIndex === -1) {
-        nodes.push(
-          <span key={`${keyPrefix}-${path}-${nodes.length}`} style={activeStyles}>
-            {input.slice(tagStart, tagEnd + 1)}
-          </span>
-        );
-        cursor = tagEnd + 1;
-        continue;
-      }
-
-      const content = input.slice(tagEnd + 1, closingIndex);
-      const nextStyles = { ...activeStyles };
-
-      if (tagName === "b") nextStyles.fontWeight = 700;
-      if (tagName === "i") nextStyles.fontStyle = "italic";
-      if (tagName === "u") nextStyles.textDecoration = "underline";
-      if (tagName.startsWith("color:")) nextStyles.color = tagName.split(":")[1];
-
-      nodes.push(...parse(content, nextStyles, `${path}-${nodes.length}`));
-      cursor = closingIndex + closingMarker.length;
     }
+  }
 
-    return nodes;
-  };
-
-  return parse(text);
+  return nodes;
 }

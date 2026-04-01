@@ -8,6 +8,7 @@ export default function JobMatchPanel({
   onAnalyze,
   onTransform,
   onApplyTransformation,
+  onSaveJobDescription,
   transformationResult,
   suggestionCards,
   onSuggestionAction,
@@ -24,6 +25,14 @@ export default function JobMatchPanel({
       onToggle={onToggle}
       actions={
         <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="pill-button"
+            onClick={onSaveJobDescription}
+            disabled={isAnalyzing || isTransforming}
+          >
+            Save JD
+          </button>
           <button
             type="button"
             className="pill-button"

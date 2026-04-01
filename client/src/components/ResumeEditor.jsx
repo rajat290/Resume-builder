@@ -60,7 +60,8 @@ export default function ResumeEditor({
   setResume,
   mode = "desktop",
   openSection,
-  onSectionChange
+  onSectionChange,
+  onSectionSave
 }) {
   const [localOpenSections, setLocalOpenSections] = useState(sectionDefaults);
   const isMobileMode = mode === "mobile";
@@ -231,6 +232,19 @@ export default function ResumeEditor({
   const cardClass = isMobileMode ? "space-y-4" : "space-y-6";
   const sectionGridClass = isMobileMode ? "grid gap-4" : "grid gap-4 md:grid-cols-2";
   const stackActionClass = isMobileMode ? "mt-4 grid gap-3" : "mt-4 flex gap-3";
+  const saveButtonClass =
+    "rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800";
+  const renderSectionSave = (section, label) => (
+    <div className="mt-4 flex justify-end">
+      <button
+        type="button"
+        className={saveButtonClass}
+        onClick={() => onSectionSave?.(section, label)}
+      >
+        Save {label}
+      </button>
+    </div>
+  );
 
   return (
     <div className={cardClass}>
@@ -273,6 +287,7 @@ export default function ResumeEditor({
             rows={isMobileMode ? 4 : 5}
           />
         </div>
+        {renderSectionSave("personal", "Personal Info")}
       </CollapsibleCard>
 
       <CollapsibleCard
@@ -354,6 +369,7 @@ export default function ResumeEditor({
             </div>
           ))}
         </div>
+        {renderSectionSave("skills", "Skills")}
       </CollapsibleCard>
 
       <CollapsibleCard
@@ -440,6 +456,7 @@ export default function ResumeEditor({
             </div>
           ))}
         </div>
+        {renderSectionSave("experience", "Experience")}
       </CollapsibleCard>
 
       <CollapsibleCard
@@ -496,6 +513,7 @@ export default function ResumeEditor({
             </div>
           ))}
         </div>
+        {renderSectionSave("projects", "Projects")}
       </CollapsibleCard>
 
       <CollapsibleCard
@@ -562,6 +580,7 @@ export default function ResumeEditor({
             </div>
           ))}
         </div>
+        {renderSectionSave("education", "Education")}
       </CollapsibleCard>
     </div>
   );

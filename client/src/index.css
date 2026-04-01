@@ -112,3 +112,27 @@ body {
 .pill-button {
   @apply rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-accent hover:text-accent;
 }
+
+.ProseMirror {
+  min-height: inherit;
+  outline: none;
+  white-space: pre-wrap;
+}
+
+.ProseMirror p {
+  margin: 0;
+}
+
+.ProseMirror p + p,
+.ProseMirror ul + p,
+.ProseMirror ol + p,
+.ProseMirror p + ul,
+.ProseMirror p + ol {
+  margin-top: 0.65rem;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  margin: 0.65rem 0 0;
+  padding-left: 1.35rem;
+}
