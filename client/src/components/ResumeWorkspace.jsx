@@ -45,6 +45,7 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
   const [isRetryingBackend, setIsRetryingBackend] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [activityLog, setActivityLog] = useState([]);
+  const [isComparePageOpen, setIsComparePageOpen] = useState(false);
   const resumeRef = useRef(null);
   const resumeUploadRef = useRef(null);
 
@@ -266,6 +267,7 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
       setBackendStatus("online");
       setCompareMode("after");
       setMobileTab("compare");
+      setIsComparePageOpen(true);
       addActivity(
         "AI rewrite generated",
         "Created a rewritten version aligned to the target role and opened the compare view."
@@ -312,6 +314,7 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
     setResume(normalizeResumeData(importedResume));
     setTransformationResult(null);
     setComparisonSourceResume(null);
+    setIsComparePageOpen(false);
     addActivity(
       "Resume imported",
       "Imported an existing resume into the editor for faster customization."
@@ -326,6 +329,7 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
 
     setResume(normalizeResumeData(transformationResult.transformedResume));
     setMobileTab("preview");
+    setIsComparePageOpen(false);
     addActivity(
       "Rewrite applied",
       "Accepted the rewritten resume and moved it into the live preview."
@@ -380,9 +384,7 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
     handleTransform();
   };
 
-  const previewResume = transformationResult?.transformedResume
-    ? normalizeResumeData(transformationResult.transformedResume)
-    : resume;
+  const previewResume = resume;
 
   const canDownload =
     hasText(resume.personalInfo.fullName) ||
@@ -395,6 +397,50 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
     preview: "Preview Resume",
     compare: "Compare Versions"
   };
+
+  const handleSectionSave = (_sectionKey, label) => {
+    setSaveState("saved");
+    setToast({ message: `${label} saved`, type: "success" });
+    addActivity(`${label} saved`, `Updated the ${label.toLowerCase()} section in the editor.`);
+    window.setTimeout(() => setSaveState("idle"), 1800);
+  };
+
+  const handleSaveJobDescription = () => {
+    setSaveState("saved");
+    setToast({ message: "Job description saved", type: "success" });
+    addActivity(
+      "Job description saved",
+      "Saved the current target role description for scoring and AI rewrite."
+    );
+    window.setTimeout(() => setSaveState("idle"), 1800);
+  };
+
+  if (isComparePageOpen && transformationResult?.transformedResume && comparisonSourceResume) {
+    return (
+      <>
+        <MobileToastHost toast={toast} />
+        <ProfilePanel
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+          currentUser={currentUser}
+          activityLog={activityLog}
+          scoreData={scoreData}
+          selectedTemplate={selectedTemplate}
+          onSignOut={onSignOut}
+        />
+        <ResumeComparison
+          originalResume={comparisonSourceResume}
+          rewrittenResume={normalizeResumeData(transformationResult.transformedResume)}
+          selectedTemplate={selectedTemplate}
+          onBackToEditor={() => {
+            setIsComparePageOpen(false);
+            setMobileTab("edit");
+          }}
+          onApplyTransformation={handleApplyTransformation}
+        />
+      </>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.14),_transparent_35%),linear-gradient(180deg,_#f5faff_0%,_#eef4fb_50%,_#e7eef8_100%)] px-4 py-5 text-ink md:px-6 lg:px-8">
@@ -447,6 +493,7 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
               onAnalyze={handleOptimize}
               onTransform={handleTransform}
               onApplyTransformation={handleApplyTransformation}
+              onSaveJobDescription={handleSaveJobDescription}
               transformationResult={transformationResult}
               suggestionCards={suggestionCards}
               onSuggestionAction={handleSuggestionAction}
@@ -455,23 +502,19 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
               isOpen={leftPanels.analyzer}
               onToggle={() => toggleLeftPanel("analyzer")}
             />
-            <ResumeEditor resume={resume} setResume={setResume} />
+            <ResumeEditor
+              resume={resume}
+              setResume={setResume}
+              onSectionSave={handleSectionSave}
+            />
           </div>
 
           <div>
-            {transformationResult?.transformedResume && comparisonSourceResume ? (
-              <ResumeComparison
-                originalResume={comparisonSourceResume}
-                rewrittenResume={normalizeResumeData(transformationResult.transformedResume)}
-                selectedTemplate={selectedTemplate}
-              />
-            ) : (
-              <ResumePreview
-                resume={resume}
-                selectedTemplate={selectedTemplate}
-                resumeRef={resumeRef}
-              />
-            )}
+            <ResumePreview
+              resume={resume}
+              selectedTemplate={selectedTemplate}
+              resumeRef={resumeRef}
+            />
           </div>
         </div>
       </div>
@@ -505,6 +548,8 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
               onImportComplete={handleImportedResume}
               onFileImportStateChange={setIsUploadingResume}
               onConnectionError={(error) => handleApiError(error)}
+              onSectionSave={handleSectionSave}
+              onSaveJobDescription={handleSaveJobDescription}
             />
           )}
 

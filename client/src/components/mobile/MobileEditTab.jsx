@@ -12,7 +12,9 @@ export default function MobileEditTab({
   resumeUploadRef,
   onImportComplete,
   onFileImportStateChange,
-  onConnectionError
+  onConnectionError,
+  onSectionSave,
+  onSaveJobDescription
 }) {
   return (
     <div className="space-y-4">
@@ -41,6 +43,15 @@ export default function MobileEditTab({
         <p className="mt-2 text-xs text-slate-400">
           The more complete the JD, the better the optimization and rewrite quality.
         </p>
+        <div className="mt-4 flex justify-end">
+          <button
+            type="button"
+            className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+            onClick={onSaveJobDescription}
+          >
+            Save Job Description
+          </button>
+        </div>
       </CollapsibleCard>
 
       <ResumeEditor
@@ -49,6 +60,7 @@ export default function MobileEditTab({
         mode="mobile"
         openSection={openSection}
         onSectionChange={onSectionChange}
+        onSectionSave={onSectionSave}
       />
     </div>
   );

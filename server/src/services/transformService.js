@@ -5,7 +5,12 @@ import { extractKeywords } from "./keywordService.js";
 const MODEL = env.openAiModel;
 
 const stripRichText = (value = "") =>
-  String(value).replace(/\[(\/)?(b|i|u|color(?::#[0-9a-fA-F]{3,6})?)\]/g, "");
+  String(value)
+    .replace(/\[(\/)?(b|i|u|color(?::#[0-9a-fA-F]{3,6})?)\]/g, "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
 const normalizeText = (value = "") => stripRichText(value).toLowerCase();
 
@@ -360,7 +365,19 @@ function validateSkillGroups(candidateSkills, originalResume) {
   return cleaned.length ? cleaned : originalResume.skills;
 }
 
-function validateAndMergeResume(originalResume, candidateResume, keywords) {
+function sameText(a, b) {
+  return normalizeText(a) === normalizeText(b);
+}
+
+function sameList(a = [], b = []) {
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  return a.every((item, index) => sameText(item, b[index] || ""));
+}
+
+function validateAndMergeResume(originalResume, candidateResume, keywords, fallbackResume) {
   const lockedExperience = originalResume.experience.map((item) => ({
     company: item.company,
     role: item.role,
@@ -374,34 +391,68 @@ function validateAndMergeResume(originalResume, candidateResume, keywords) {
     startDate: item.startDate,
     endDate: item.endDate
   }));
+  const validatedSkills = validateSkillGroups(candidateResume?.skills, originalResume);
+  const mergedSkills =
+    validatedSkills.length && JSON.stringify(validatedSkills) !== JSON.stringify(originalResume.skills)
+      ? validatedSkills
+      : fallbackResume.skills;
 
   const transformedResume = {
     ...originalResume,
     personalInfo: {
       ...originalResume.personalInfo,
-      title: candidateResume?.personalInfo?.title || originalResume.personalInfo.title,
-      summary: candidateResume?.personalInfo?.summary || originalResume.personalInfo.summary
+      title:
+        stripRichText(candidateResume?.personalInfo?.title || "") ||
+        fallbackResume.personalInfo.title ||
+        originalResume.personalInfo.title,
+      summary:
+        stripRichText(candidateResume?.personalInfo?.summary || "") &&
+        !sameText(candidateResume?.personalInfo?.summary || "", originalResume.personalInfo.summary)
+          ? stripRichText(candidateResume.personalInfo.summary)
+          : fallbackResume.personalInfo.summary
     },
-    skills: validateSkillGroups(candidateResume?.skills, originalResume),
+    skills: mergedSkills,
     experience: originalResume.experience.map((item, index) => ({
       ...item,
       ...lockedExperience[index],
-      achievements:
-        candidateResume?.experience?.[index]?.achievements?.filter(Boolean)?.map(stripRichText) ||
-        item.achievements
+      achievements: (() => {
+        const candidateAchievements =
+          candidateResume?.experience?.[index]?.achievements?.filter(Boolean)?.map(stripRichText) ||
+          [];
+
+        if (
+          candidateAchievements.length &&
+          !sameList(candidateAchievements, item.achievements)
+        ) {
+          return candidateAchievements;
+        }
+
+        return fallbackResume.experience[index]?.achievements || item.achievements;
+      })()
     })),
     projects: originalResume.projects.map((item, index) => ({
       ...item,
       name: lockedProjects[index],
-      description:
-        stripRichText(candidateResume?.projects?.[index]?.description || item.description),
+      description: (() => {
+        const candidateDescription = stripRichText(
+          candidateResume?.projects?.[index]?.description || ""
+        );
+        return candidateDescription && !sameText(candidateDescription, item.description)
+          ? candidateDescription
+          : fallbackResume.projects[index]?.description || item.description;
+      })(),
       stack: stripRichText(candidateResume?.projects?.[index]?.stack || item.stack),
       link: item.link
     })),
     education: originalResume.education.map((item, index) => ({
       ...item,
       ...lockedEducation[index],
-      details: stripRichText(candidateResume?.education?.[index]?.details || item.details)
+      details: (() => {
+        const candidateDetails = stripRichText(candidateResume?.education?.[index]?.details || "");
+        return candidateDetails && !sameText(candidateDetails, item.details)
+          ? candidateDetails
+          : fallbackResume.education[index]?.details || item.details;
+      })()
     }))
   };
 
@@ -431,6 +482,7 @@ Strict constraints:
 5. Keep companies, roles, project names, institutions, and dates unchanged in the output.
 6. Missing hard-skill requirements must be listed in missingRequirements, not inserted as false claims.
 7. Output valid JSON only.
+8. Rewrite summary, skills, every experience bullet, and every project description in detail. Do not leave those sections mostly unchanged.
 
 Write aggressively for relevance:
 - Use ATS-friendly phrases from the job description when they can be supported by the original resume.
@@ -438,6 +490,9 @@ Write aggressively for relevance:
 - Reorganize the skills section into a new structure aligned to the role.
 - Rewrite every experience bullet to sound role-specific and recruiter-friendly.
 - Rewrite every project description to maximize relevance.
+- Every experience entry must come back with rewritten bullets.
+- Skills must be reordered and regrouped according to the job description.
+- If a section is already strong, still rewrite it so it reads like it was originally written for this role.
 
 Return exactly:
 {
@@ -468,17 +523,22 @@ ${JSON.stringify(resume)}
     input: prompt
   });
 
+  const fallbackResult = applyFallbackTransformation(resume, jobDescription, keywords);
   const parsed = safeJsonParse(response.output_text || "");
   const { transformedResume, missingRequirements } = validateAndMergeResume(
     resume,
     parsed.transformedResume,
-    keywords
+    keywords,
+    fallbackResult.transformedResume
   );
 
   return {
     provider: "openai",
     transformedResume,
-    changeSummary: Array.isArray(parsed.changeSummary) ? parsed.changeSummary : [],
+    changeSummary:
+      Array.isArray(parsed.changeSummary) && parsed.changeSummary.length
+        ? parsed.changeSummary
+        : fallbackResult.changeSummary,
     missingRequirements:
       Array.isArray(parsed.missingRequirements) && parsed.missingRequirements.length
         ? parsed.missingRequirements
