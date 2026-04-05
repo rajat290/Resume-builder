@@ -1,4 +1,5 @@
 import { apiFetch } from "./api";
+import { getFontStack } from "./resumeHelpers";
 
 function collectDocumentStyles() {
   return Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
@@ -6,7 +7,18 @@ function collectDocumentStyles() {
     .join("\n");
 }
 
-export async function exportResumeAsPdf({ node, fileName }) {
+function buildFontStyleBlock({ headingFont, bodyFont }) {
+  return `
+    <style>
+      :root {
+        --resume-font-heading: ${getFontStack(headingFont, "merriweather")};
+        --resume-font-body: ${getFontStack(bodyFont, "inter")};
+      }
+    </style>
+  `;
+}
+
+export async function exportResumeAsPdf({ node, fileName, headingFont, bodyFont }) {
   if (!node) {
     throw new Error("Resume preview is not ready.");
   }
@@ -15,7 +27,7 @@ export async function exportResumeAsPdf({ node, fileName }) {
     method: "POST",
     body: JSON.stringify({
       html: node.outerHTML,
-      styles: collectDocumentStyles(),
+      styles: collectDocumentStyles() + buildFontStyleBlock({ headingFont, bodyFont }),
       fileName: fileName || "resume"
     })
   });

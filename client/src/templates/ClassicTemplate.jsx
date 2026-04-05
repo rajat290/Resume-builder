@@ -14,7 +14,7 @@ import {
 
 export default function ClassicTemplate({ resume }) {
   return (
-    <div className="resume-page bg-white p-10">
+    <div className="resume-page resume-body-font bg-white p-10">
       <ResumeHeader personalInfo={resume.personalInfo} />
       {hasSkillContent(resume.skills) && (
         <section className="mt-8">

@@ -10,7 +10,7 @@ import { renderRichText } from "../utils/richText.jsx";
 function PlainSection({ title, children }) {
   return (
     <section className="mt-6">
-      <h2 className="border-b border-black pb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-black">
+      <h2 className="resume-heading-font border-b border-black pb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-black">
         {title}
       </h2>
       <div className="mt-3">{children}</div>
@@ -25,7 +25,7 @@ function PlainHeader({ personalInfo, serif = false, centered = false }) {
   return (
     <header className={containerClass}>
       {hasText(personalInfo.fullName) && (
-        <h1 className={`${headingFont} text-[28px] font-bold uppercase tracking-[0.12em] text-black`}>
+        <h1 className={`${headingFont} resume-heading-font text-[28px] font-bold uppercase tracking-[0.12em] text-black`}>
           {renderRichText(personalInfo.fullName, "ats-full-name")}
         </h1>
       )}
@@ -69,7 +69,7 @@ function PlainSkills({ skills, inline = false }) {
           .filter((group) => group.items?.some((item) => hasText(item.name)))
           .map((group, groupIndex) => (
             <p key={`${group.category}-${groupIndex}`}>
-              {hasText(group.category) && <span className="font-bold">{group.category}: </span>}
+              {hasText(group.category) && <span className="resume-heading-font font-bold">{group.category}: </span>}
               {group.items.filter((item) => hasText(item.name)).map((item) => item.name).join(", ")}
             </p>
           ))}
@@ -81,9 +81,9 @@ function PlainSkills({ skills, inline = false }) {
     <div className="space-y-3 text-[13px] text-black">
       {skills
         .filter((group) => group.items?.some((item) => hasText(item.name)))
-        .map((group, groupIndex) => (
+          .map((group, groupIndex) => (
           <div key={`${group.category}-${groupIndex}`}>
-            {hasText(group.category) && <p className="font-bold">{group.category}</p>}
+            {hasText(group.category) && <p className="resume-heading-font font-bold">{group.category}</p>}
             <ul className="grid gap-1 sm:grid-cols-2">
               {group.items
                 .filter((item) => hasText(item.name))
@@ -119,7 +119,7 @@ function PlainExperience({ experience, tight = false }) {
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 {hasText(item.role) && (
-                  <h3 className="text-[14px] font-bold text-black">
+                  <h3 className="resume-heading-font text-[14px] font-bold text-black">
                     {renderRichText(item.role, `ats-role-${index}`)}
                   </h3>
                 )}
@@ -168,7 +168,7 @@ function PlainProjects({ projects }) {
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 {hasText(project.name) && (
-                  <h3 className="text-[14px] font-bold text-black">
+                  <h3 className="resume-heading-font text-[14px] font-bold text-black">
                     {renderRichText(project.name, `ats-project-name-${index}`)}
                   </h3>
                 )}
@@ -201,7 +201,7 @@ function PlainEducation({ education }) {
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 {hasText(item.degree) && (
-                  <h3 className="text-[14px] font-bold text-black">
+                  <h3 className="resume-heading-font text-[14px] font-bold text-black">
                     {renderRichText(item.degree, `ats-degree-${index}`)}
                   </h3>
                 )}

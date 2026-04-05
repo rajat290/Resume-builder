@@ -14,7 +14,7 @@ import {
 
 export default function ExecutiveTemplate({ resume }) {
   return (
-    <div className="resume-page bg-paper p-10">
+    <div className="resume-page resume-body-font bg-paper p-10">
       <div className="border-b-4 border-accent pb-6">
         <ResumeHeader personalInfo={resume.personalInfo} />
       </div>

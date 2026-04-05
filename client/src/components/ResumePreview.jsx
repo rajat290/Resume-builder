@@ -6,6 +6,7 @@ import AtsCompactTemplate from "../templates/AtsCompactTemplate";
 import AtsDetailedTemplate from "../templates/AtsDetailedTemplate";
 import AtsMinimalTemplate from "../templates/AtsMinimalTemplate";
 import AtsSerifTemplate from "../templates/AtsSerifTemplate";
+import { getFontStack } from "../utils/resumeHelpers";
 
 export const templateMap = {
   classic: ClassicTemplate,
@@ -22,9 +23,15 @@ export default function ResumePreview({
   resume,
   selectedTemplate,
   resumeRef,
-  spacingDensity = "standard"
+  spacingDensity = "standard",
+  headingFont = "merriweather",
+  bodyFont = "inter"
 }) {
   const Template = templateMap[selectedTemplate] ?? ClassicTemplate;
+  const fontStyle = {
+    "--resume-font-heading": getFontStack(headingFont, "merriweather"),
+    "--resume-font-body": getFontStack(bodyFont, "inter")
+  };
 
   return (
     <div className="rounded-[2rem] border border-slate-200 bg-[#dfe7ef] p-3 shadow-panel sm:p-4 lg:sticky lg:top-6">
@@ -40,6 +47,7 @@ export default function ResumePreview({
         <div
           ref={resumeRef}
           className={`resume-density-${spacingDensity} mx-auto min-w-[210mm] overflow-hidden rounded-xl bg-white shadow-sm`}
+          style={fontStyle}
         >
           <Template resume={resume} />
         </div>

@@ -11,7 +11,7 @@ export function ResumeHeader({ personalInfo, centered = false, accent = "text-ac
   return (
     <header className={centered ? "text-center" : ""}>
       {hasText(personalInfo.fullName) && (
-        <h1 className="font-display text-4xl font-semibold uppercase tracking-[0.18em] text-ink">
+        <h1 className="text-4xl font-semibold uppercase tracking-[0.18em] text-ink resume-heading-font">
           {renderRichText(personalInfo.fullName, "fullName")}
         </h1>
       )}
@@ -49,7 +49,7 @@ export function SkillsList({ skills, compact = false, dark = false }) {
           <div key={`${group.category}-${groupIndex}`}>
             {hasText(group.category) && (
               <h3
-                className={`mb-2 text-xs font-semibold uppercase tracking-[0.16em] ${
+                className={`resume-heading-font mb-2 text-xs font-semibold uppercase tracking-[0.16em] ${
                   dark ? "text-slate-300" : "text-slate-500"
                 }`}
               >
@@ -108,7 +108,7 @@ export function ExperienceBlock({ experience, dark = false }) {
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 {hasText(item.role) && (
-                  <h3 className={`text-base font-semibold ${dark ? "text-white" : "text-ink"}`}>
+                  <h3 className={`resume-heading-font text-base font-semibold ${dark ? "text-white" : "text-ink"}`}>
                     {renderRichText(item.role, `role-${index}`)}
                   </h3>
                 )}
@@ -163,7 +163,7 @@ export function ProjectBlock({ projects, dark = false }) {
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 {hasText(project.name) && (
-                  <h3 className={`text-base font-semibold ${dark ? "text-white" : "text-ink"}`}>
+                  <h3 className={`resume-heading-font text-base font-semibold ${dark ? "text-white" : "text-ink"}`}>
                     {renderRichText(project.name, `project-name-${index}`)}
                   </h3>
                 )}
@@ -214,7 +214,7 @@ export function EducationBlock({ education, dark = false }) {
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 {hasText(item.degree) && (
-                  <h3 className={`text-base font-semibold ${dark ? "text-white" : "text-ink"}`}>
+                  <h3 className={`resume-heading-font text-base font-semibold ${dark ? "text-white" : "text-ink"}`}>
                     {renderRichText(item.degree, `degree-${index}`)}
                   </h3>
                 )}

@@ -173,3 +173,23 @@ export const densityOptions = [
   { id: "standard", label: "Standard" },
   { id: "comfortable", label: "Comfortable" }
 ];
+
+export const fontOptions = [
+  { id: "inter", label: "Inter", stack: "'Inter', 'Segoe UI', sans-serif" },
+  { id: "manrope", label: "Manrope", stack: "'Manrope', 'Segoe UI', sans-serif" },
+  { id: "plus-jakarta", label: "Plus Jakarta Sans", stack: "'Plus Jakarta Sans', 'Segoe UI', sans-serif" },
+  { id: "source-sans", label: "Source Sans 3", stack: "'Source Sans 3', 'Segoe UI', sans-serif" },
+  { id: "merriweather", label: "Merriweather", stack: "'Merriweather', Georgia, serif" },
+  { id: "lora", label: "Lora", stack: "'Lora', Georgia, serif" },
+  { id: "source-serif", label: "Source Serif 4", stack: "'Source Serif 4', Georgia, serif" }
+];
+
+export const defaultFontSettings = {
+  heading: "merriweather",
+  body: "inter"
+};
+
+export const getFontStack = (fontId, fallback = defaultFontSettings.body) =>
+  fontOptions.find((font) => font.id === fontId)?.stack ||
+  fontOptions.find((font) => font.id === fallback)?.stack ||
+  "'Segoe UI', sans-serif";

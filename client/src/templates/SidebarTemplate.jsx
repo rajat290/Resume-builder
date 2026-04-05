@@ -8,11 +8,11 @@ import { renderRichText } from "../utils/richText.jsx";
 
 export default function SidebarTemplate({ resume }) {
   return (
-    <div className="resume-page grid grid-cols-[0.8fr_1.6fr] bg-white">
+    <div className="resume-page resume-body-font grid grid-cols-[0.8fr_1.6fr] bg-white">
       <aside className="bg-ink p-8 text-white">
         {hasSkillContent(resume.skills) && (
           <>
-            <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
+            <h2 className="resume-heading-font mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
               Skills
             </h2>
             <div className="space-y-4">
@@ -21,7 +21,7 @@ export default function SidebarTemplate({ resume }) {
                 .map((group, groupIndex) => (
                   <div key={`${group.category}-${groupIndex}`}>
                     {hasText(group.category) && (
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                      <p className="resume-heading-font mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
                         {group.category}
                       </p>
                     )}
@@ -49,7 +49,7 @@ export default function SidebarTemplate({ resume }) {
 
         {hasEducationContent(resume.education) && (
           <div className="mt-8">
-            <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
+            <h2 className="resume-heading-font mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
               Education
             </h2>
             <div className="space-y-4">
@@ -57,7 +57,7 @@ export default function SidebarTemplate({ resume }) {
                 .filter((item) => hasText(item.degree) || hasText(item.institution) || hasText(item.details))
                 .map((item, index) => (
                   <article key={`${item.institution}-${index}`}>
-                    {hasText(item.degree) && <h3 className="text-sm font-semibold text-white">{renderRichText(item.degree, `sidebar-degree-${index}`)}</h3>}
+                    {hasText(item.degree) && <h3 className="resume-heading-font text-sm font-semibold text-white">{renderRichText(item.degree, `sidebar-degree-${index}`)}</h3>}
                     {hasText(item.institution) && <p className="text-sm text-slate-300">{renderRichText(item.institution, `sidebar-inst-${index}`)}</p>}
                     {(hasText(item.startDate) || hasText(item.endDate)) && (
                       <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-400">
