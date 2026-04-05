@@ -11,7 +11,7 @@ import { hasEducationContent, hasExperienceContent, hasProjectContent, hasSkillC
 
 export default function AtsCompactTemplate({ resume }) {
   return (
-    <div className="resume-page bg-white px-9 py-7 font-sans text-black">
+    <div className="resume-page resume-body-font bg-white px-9 py-7 text-black">
       <PlainHeader personalInfo={resume.personalInfo} centered />
       {hasText(resume.personalInfo.summary) && (
         <PlainSection title="Professional Summary">

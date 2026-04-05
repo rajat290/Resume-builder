@@ -11,7 +11,7 @@ import { hasEducationContent, hasExperienceContent, hasProjectContent, hasSkillC
 
 export default function AtsDetailedTemplate({ resume }) {
   return (
-    <div className="resume-page bg-white px-10 py-8 font-sans text-black">
+    <div className="resume-page resume-body-font bg-white px-10 py-8 text-black">
       <div className="border border-black px-6 py-5">
         <PlainHeader personalInfo={resume.personalInfo} />
       </div>

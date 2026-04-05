@@ -1,11 +1,15 @@
 import { Download, Sparkles, Upload, UserCircle2 } from "lucide-react";
-import { densityOptions, templateOptions } from "../utils/resumeHelpers";
+import { densityOptions, fontOptions, templateOptions } from "../utils/resumeHelpers";
 
 export default function TopBar({
   selectedTemplate,
   onTemplateChange,
   spacingDensity,
   onSpacingDensityChange,
+  headingFont,
+  bodyFont,
+  onHeadingFontChange,
+  onBodyFontChange,
   onOptimize,
   onDownload,
   onUploadResume,
@@ -57,7 +61,7 @@ export default function TopBar({
             </div>
           )}
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[860px] xl:grid-cols-[minmax(180px,220px)_minmax(160px,200px)_1fr_1fr_1fr]">
+        <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[1120px] xl:grid-cols-[minmax(180px,220px)_minmax(160px,200px)_minmax(170px,210px)_minmax(170px,210px)_1fr_1fr_1fr]">
           <select
             className="field-input"
             value={selectedTemplate}
@@ -77,6 +81,28 @@ export default function TopBar({
             {densityOptions.map((option) => (
               <option key={option.id} value={option.id}>
                 {option.label} spacing
+              </option>
+            ))}
+          </select>
+          <select
+            className="field-input"
+            value={headingFont}
+            onChange={(event) => onHeadingFontChange(event.target.value)}
+          >
+            {fontOptions.map((option) => (
+              <option key={option.id} value={option.id}>
+                Heading: {option.label}
+              </option>
+            ))}
+          </select>
+          <select
+            className="field-input"
+            value={bodyFont}
+            onChange={(event) => onBodyFontChange(event.target.value)}
+          >
+            {fontOptions.map((option) => (
+              <option key={option.id} value={option.id}>
+                Body: {option.label}
               </option>
             ))}
           </select>

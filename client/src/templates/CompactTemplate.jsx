@@ -14,7 +14,7 @@ import {
 
 export default function CompactTemplate({ resume }) {
   return (
-    <div className="resume-page bg-white p-8">
+    <div className="resume-page resume-body-font bg-white p-8">
       <ResumeHeader personalInfo={resume.personalInfo} centered />
       {hasSkillContent(resume.skills) && (
         <section className="mt-8">

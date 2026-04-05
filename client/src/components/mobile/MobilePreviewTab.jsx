@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { templateMap } from "../ResumePreview";
-import { densityOptions, templateOptions } from "../../utils/resumeHelpers";
+import { densityOptions, fontOptions, templateOptions } from "../../utils/resumeHelpers";
 
 export default function MobilePreviewTab({
   resume,
@@ -8,6 +8,10 @@ export default function MobilePreviewTab({
   onTemplateChange,
   spacingDensity,
   onSpacingDensityChange,
+  headingFont,
+  bodyFont,
+  onHeadingFontChange,
+  onBodyFontChange,
   previewMode,
   onPreviewModeChange,
   resumeRef
@@ -41,6 +45,28 @@ export default function MobilePreviewTab({
             {densityOptions.map((option) => (
               <option key={option.id} value={option.id}>
                 {option.label} spacing
+              </option>
+            ))}
+          </select>
+          <select
+            className="field-input"
+            value={headingFont}
+            onChange={(event) => onHeadingFontChange(event.target.value)}
+          >
+            {fontOptions.map((option) => (
+              <option key={option.id} value={option.id}>
+                Heading: {option.label}
+              </option>
+            ))}
+          </select>
+          <select
+            className="field-input"
+            value={bodyFont}
+            onChange={(event) => onBodyFontChange(event.target.value)}
+          >
+            {fontOptions.map((option) => (
+              <option key={option.id} value={option.id}>
+                Body: {option.label}
               </option>
             ))}
           </select>

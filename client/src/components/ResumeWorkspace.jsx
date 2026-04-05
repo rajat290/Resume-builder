@@ -16,7 +16,12 @@ import MobileHeader from "./mobile/MobileHeader";
 import MobilePreviewTab from "./mobile/MobilePreviewTab";
 import MobileScoreTab from "./mobile/MobileScoreTab";
 import MobileToastHost from "./mobile/MobileToastHost";
-import { emptyResume, hasText, normalizeResumeData } from "../utils/resumeHelpers";
+import {
+  defaultFontSettings,
+  emptyResume,
+  hasText,
+  normalizeResumeData
+} from "../utils/resumeHelpers";
 import { buildResumeScore, buildSuggestionCards } from "../utils/resumeScoring";
 import { apiFetch, checkApiHealth, isApiConnectionError } from "../utils/api";
 import { exportResumeAsPdf } from "../utils/pdfExport";
@@ -26,6 +31,8 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
   const [selectedTemplate, setSelectedTemplate] = useState("classic");
   const [jobDescription, setJobDescription] = useState("");
   const [spacingDensity, setSpacingDensity] = useState("standard");
+  const [headingFont, setHeadingFont] = useState(defaultFontSettings.heading);
+  const [bodyFont, setBodyFont] = useState(defaultFontSettings.body);
   const [keywords, setKeywords] = useState([]);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [isTransforming, setIsTransforming] = useState(false);
@@ -292,7 +299,9 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
     try {
       await exportResumeAsPdf({
         node: resumeRef.current,
-        fileName: `${resume.personalInfo.fullName || "resume"}-${selectedTemplate}`
+        fileName: `${resume.personalInfo.fullName || "resume"}-${selectedTemplate}`,
+        headingFont,
+        bodyFont
       });
 
       addActivity(
@@ -469,6 +478,10 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
           onTemplateChange={setSelectedTemplate}
           spacingDensity={spacingDensity}
           onSpacingDensityChange={setSpacingDensity}
+          headingFont={headingFont}
+          bodyFont={bodyFont}
+          onHeadingFontChange={setHeadingFont}
+          onBodyFontChange={setBodyFont}
           onOptimize={handleOptimize}
           onDownload={handleDownload}
           onUploadResume={() => resumeUploadRef.current?.click()}
@@ -520,6 +533,8 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
               selectedTemplate={selectedTemplate}
               resumeRef={resumeRef}
               spacingDensity={spacingDensity}
+              headingFont={headingFont}
+              bodyFont={bodyFont}
             />
           </div>
         </div>
@@ -576,6 +591,10 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
               onTemplateChange={setSelectedTemplate}
               spacingDensity={spacingDensity}
               onSpacingDensityChange={setSpacingDensity}
+              headingFont={headingFont}
+              bodyFont={bodyFont}
+              onHeadingFontChange={setHeadingFont}
+              onBodyFontChange={setBodyFont}
               previewMode={previewMode}
               onPreviewModeChange={setPreviewMode}
               resumeRef={resumeRef}
