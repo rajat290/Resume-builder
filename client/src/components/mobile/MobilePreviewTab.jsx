@@ -1,11 +1,13 @@
 import { useMemo } from "react";
 import { templateMap } from "../ResumePreview";
-import { templateOptions } from "../../utils/resumeHelpers";
+import { densityOptions, templateOptions } from "../../utils/resumeHelpers";
 
 export default function MobilePreviewTab({
   resume,
   selectedTemplate,
   onTemplateChange,
+  spacingDensity,
+  onSpacingDensityChange,
   previewMode,
   onPreviewModeChange,
   resumeRef
@@ -28,6 +30,17 @@ export default function MobilePreviewTab({
             {templateOptions.map((template) => (
               <option key={template.id} value={template.id}>
                 {template.label}
+              </option>
+            ))}
+          </select>
+          <select
+            className="field-input"
+            value={spacingDensity}
+            onChange={(event) => onSpacingDensityChange(event.target.value)}
+          >
+            {densityOptions.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label} spacing
               </option>
             ))}
           </select>
@@ -56,11 +69,17 @@ export default function MobilePreviewTab({
             </button>
           </div>
         </div>
+        <p className="mt-3 text-xs leading-5 text-slate-400">
+          If the print dialog still shows a date or title, turn off `Headers and footers` before saving the PDF.
+        </p>
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-[#dfe7ef] p-3 shadow-panel">
         <div className="overflow-x-auto rounded-xl bg-white/70 p-2">
-          <div ref={resumeRef} className="mx-auto min-w-[210mm] overflow-hidden rounded-xl bg-white shadow-sm">
+          <div
+            ref={resumeRef}
+            className={`resume-density-${spacingDensity} mx-auto min-w-[210mm] overflow-hidden rounded-xl bg-white shadow-sm`}
+          >
             <Template resume={resume} />
           </div>
         </div>

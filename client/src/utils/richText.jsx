@@ -48,67 +48,57 @@ function sanitizeHtml(value = "") {
   return Array.from(doc.body.childNodes).map(sanitizeNode).join("");
 }
 
-function parseStyle(styleText = "") {
-  const style = {};
-  const colorMatch = styleText.match(/color:\s*(#[0-9a-f]{3,6})/i);
-
-  if (colorMatch && HEX_COLOR_PATTERN.test(colorMatch[1])) {
-    style.color = colorMatch[1];
-  }
-
-  return style;
-}
-
-function mapNodeToReact(node, key) {
+function inlineNode(node, index, listState = { type: null, item: 0 }) {
   if (node.nodeType === Node.TEXT_NODE) {
-    return node.textContent;
+    return node.textContent || "";
   }
 
   if (node.nodeType !== Node.ELEMENT_NODE) {
-    return null;
+    return "";
   }
 
   const tag = node.tagName.toLowerCase();
-  const children = Array.from(node.childNodes).map((child, index) =>
-    mapNodeToReact(child, `${key}-${index}`)
+  const nestedListState = tag === "ul" || tag === "ol" ? { type: tag, item: 0 } : listState;
+  const children = Array.from(node.childNodes).map((child, childIndex) =>
+    inlineNode(child, childIndex, nestedListState)
   );
+  const inner = children.join("");
 
   if (tag === "br") {
-    return <br key={key} />;
-  }
-
-  if (tag === "span") {
-    return (
-      <span key={key} style={parseStyle(node.getAttribute("style") || "")}>
-        {children}
-      </span>
-    );
+    return "<br />";
   }
 
   if (tag === "p") {
-    return (
-      <React.Fragment key={key}>
-        {children}
-        <br />
-      </React.Fragment>
-    );
+    return inner ? `${inner}<br />` : "";
   }
 
-  if (tag === "ul" || tag === "ol") {
-    const ListTag = tag;
-    return <ListTag key={key}>{children}</ListTag>;
+  if (tag === "strong" || tag === "em" || tag === "u") {
+    return `<${tag}>${inner}</${tag}>`;
+  }
+
+  if (tag === "span") {
+    const color = node.style?.color?.trim() || "";
+    if (HEX_COLOR_PATTERN.test(color)) {
+      return `<span style="color:${color}">${inner}</span>`;
+    }
+    return `<span>${inner}</span>`;
   }
 
   if (tag === "li") {
-    return <li key={key}>{children}</li>;
+    if (listState.type === "ol") {
+      listState.item += 1;
+      return `${listState.item}. ${inner}<br />`;
+    }
+
+    return `• ${inner}<br />`;
   }
 
-  const Tag = tag;
-  return <Tag key={key}>{children}</Tag>;
+  return inner;
 }
 
 export function renderRichText(value, keyPrefix = "rt") {
   const sanitized = sanitizeHtml(value);
+
   if (!sanitized) {
     return "";
   }
@@ -119,24 +109,10 @@ export function renderRichText(value, keyPrefix = "rt") {
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(sanitized, "text/html");
-  const nodes = Array.from(doc.body.childNodes).map((node, index) =>
-    mapNodeToReact(node, `${keyPrefix}-${index}`)
-  );
+  const inlineHtml = Array.from(doc.body.childNodes)
+    .map((node, index) => inlineNode(node, index))
+    .join("")
+    .replace(/(<br\s*\/?>)+$/i, "");
 
-  if (
-    nodes.length &&
-    React.isValidElement(nodes[nodes.length - 1]) &&
-    nodes[nodes.length - 1].type === React.Fragment
-  ) {
-    const lastNode = nodes[nodes.length - 1];
-    if (Array.isArray(lastNode.props.children)) {
-      const trimmedChildren = [...lastNode.props.children];
-      if (trimmedChildren[trimmedChildren.length - 1]?.type === "br") {
-        trimmedChildren.pop();
-        nodes[nodes.length - 1] = <React.Fragment key={lastNode.key}>{trimmedChildren}</React.Fragment>;
-      }
-    }
-  }
-
-  return nodes;
+  return <span key={keyPrefix} dangerouslySetInnerHTML={{ __html: inlineHtml }} />;
 }

@@ -1,9 +1,11 @@
 import { Download, Sparkles, Upload, UserCircle2 } from "lucide-react";
-import { templateOptions } from "../utils/resumeHelpers";
+import { densityOptions, templateOptions } from "../utils/resumeHelpers";
 
 export default function TopBar({
   selectedTemplate,
   onTemplateChange,
+  spacingDensity,
+  onSpacingDensityChange,
   onOptimize,
   onDownload,
   onUploadResume,
@@ -55,7 +57,7 @@ export default function TopBar({
             </div>
           )}
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[640px] xl:grid-cols-[minmax(180px,220px)_1fr_1fr_1fr]">
+        <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[860px] xl:grid-cols-[minmax(180px,220px)_minmax(160px,200px)_1fr_1fr_1fr]">
           <select
             className="field-input"
             value={selectedTemplate}
@@ -64,6 +66,17 @@ export default function TopBar({
             {templateOptions.map((template) => (
               <option key={template.id} value={template.id}>
                 {template.label}
+              </option>
+            ))}
+          </select>
+          <select
+            className="field-input"
+            value={spacingDensity}
+            onChange={(event) => onSpacingDensityChange(event.target.value)}
+          >
+            {densityOptions.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label} spacing
               </option>
             ))}
           </select>
@@ -93,6 +106,9 @@ export default function TopBar({
           </button>
         </div>
       </div>
+      <p className="mt-4 text-xs text-slate-400">
+        Print note: if the browser still shows a date or title in the PDF header/footer, turn off `Headers and footers` in the print dialog.
+      </p>
     </div>
   );
 }

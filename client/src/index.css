@@ -136,3 +136,60 @@ body {
   margin: 0.65rem 0 0;
   padding-left: 1.35rem;
 }
+
+.resume-density-compact .resume-page {
+  line-height: 1.34;
+}
+
+.resume-density-compact .resume-page section {
+  margin-top: 0.9rem !important;
+}
+
+.resume-density-compact .resume-page article + article {
+  margin-top: 0.75rem !important;
+}
+
+.resume-density-compact .resume-page p,
+.resume-density-compact .resume-page li {
+  line-height: 1.35 !important;
+}
+
+.resume-density-compact .resume-page ul,
+.resume-density-compact .resume-page ol {
+  margin-top: 0.35rem !important;
+  margin-bottom: 0 !important;
+}
+
+.resume-density-compact .resume-page li + li {
+  margin-top: 0.18rem !important;
+}
+
+.resume-density-standard .resume-page {
+  line-height: 1.45;
+}
+
+.resume-density-comfortable .resume-page {
+  line-height: 1.58;
+}
+
+.resume-density-comfortable .resume-page section {
+  margin-top: 1.5rem !important;
+}
+
+.resume-density-comfortable .resume-page article + article {
+  margin-top: 1.15rem !important;
+}
+
+.resume-density-comfortable .resume-page p,
+.resume-density-comfortable .resume-page li {
+  line-height: 1.6 !important;
+}
+
+.resume-density-comfortable .resume-page ul,
+.resume-density-comfortable .resume-page ol {
+  margin-top: 0.6rem !important;
+}
+
+.resume-density-comfortable .resume-page li + li {
+  margin-top: 0.42rem !important;
+}
