@@ -7,6 +7,7 @@ import { env } from "./config/env.js";
 import emailRoutes from "./routes/emailRoutes.js";
 import importRoutes from "./routes/importRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import pdfRoutes from "./routes/pdfRoutes.js";
 import resumeRoutes from "./routes/resumeRoutes.js";
 
 const app = express();
@@ -19,7 +20,7 @@ app.use(
   })
 );
 app.use(cookieParser());
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "5mb" }));
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
@@ -27,6 +28,7 @@ app.get("/api/health", (_req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/resume", resumeRoutes);
+app.use("/api/pdf", pdfRoutes);
 app.use("/api/import", importRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/email", emailRoutes);

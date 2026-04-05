@@ -167,3 +167,9 @@ export const templateOptions = [
   { id: "ats-serif", label: "ATS Serif" },
   { id: "ats-detailed", label: "ATS Detailed" }
 ];
+
+export const densityOptions = [
+  { id: "compact", label: "Compact" },
+  { id: "standard", label: "Standard" },
+  { id: "comfortable", label: "Comfortable" }
+];

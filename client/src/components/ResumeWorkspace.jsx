@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import html2pdf from "html2pdf.js";
 import ConnectionBanner from "./ConnectionBanner";
 import JobMatchPanel from "./JobMatchPanel";
 import ProfilePanel from "./ProfilePanel";
@@ -20,11 +19,13 @@ import MobileToastHost from "./mobile/MobileToastHost";
 import { emptyResume, hasText, normalizeResumeData } from "../utils/resumeHelpers";
 import { buildResumeScore, buildSuggestionCards } from "../utils/resumeScoring";
 import { apiFetch, checkApiHealth, isApiConnectionError } from "../utils/api";
+import { exportResumeAsPdf } from "../utils/pdfExport";
 
 export default function ResumeWorkspace({ currentUser, onSignOut }) {
   const [resume, setResume] = useState(emptyResume);
   const [selectedTemplate, setSelectedTemplate] = useState("classic");
   const [jobDescription, setJobDescription] = useState("");
+  const [spacingDensity, setSpacingDensity] = useState("standard");
   const [keywords, setKeywords] = useState([]);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [isTransforming, setIsTransforming] = useState(false);
@@ -281,26 +282,28 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!resumeRef.current) {
       setMobileTab("preview");
       setToast({ message: "Open preview to download PDF", type: "warning" });
       return;
     }
 
-    html2pdf()
-      .set({
-        margin: [0, 0, 0, 0],
-        filename: `${resume.personalInfo.fullName || "resume"}-${selectedTemplate}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-      })
-      .from(resumeRef.current)
-      .save();
+    try {
+      await exportResumeAsPdf({
+        node: resumeRef.current,
+        fileName: `${resume.personalInfo.fullName || "resume"}-${selectedTemplate}`
+      });
 
-    addActivity("Resume downloaded", "Exported the current resume preview as a PDF.");
-    setToast({ message: "Resume downloaded", type: "success" });
+      addActivity(
+        "Resume downloaded",
+        "Generated a server-side PDF with controlled page breaks and sharper text."
+      );
+      setToast({ message: "PDF downloaded", type: "success" });
+    } catch (error) {
+      console.error("Failed to export PDF", error);
+      setToast({ message: error.message || "PDF export failed", type: "warning" });
+    }
   };
 
   const toggleLeftPanel = (section) => {
@@ -464,6 +467,8 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
         <TopBar
           selectedTemplate={selectedTemplate}
           onTemplateChange={setSelectedTemplate}
+          spacingDensity={spacingDensity}
+          onSpacingDensityChange={setSpacingDensity}
           onOptimize={handleOptimize}
           onDownload={handleDownload}
           onUploadResume={() => resumeUploadRef.current?.click()}
@@ -514,6 +519,7 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
               resume={resume}
               selectedTemplate={selectedTemplate}
               resumeRef={resumeRef}
+              spacingDensity={spacingDensity}
             />
           </div>
         </div>
@@ -568,6 +574,8 @@ export default function ResumeWorkspace({ currentUser, onSignOut }) {
               resume={previewResume}
               selectedTemplate={selectedTemplate}
               onTemplateChange={setSelectedTemplate}
+              spacingDensity={spacingDensity}
+              onSpacingDensityChange={setSpacingDensity}
               previewMode={previewMode}
               onPreviewModeChange={setPreviewMode}
               resumeRef={resumeRef}

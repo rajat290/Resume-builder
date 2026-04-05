@@ -18,7 +18,12 @@ export const templateMap = {
   "ats-detailed": AtsDetailedTemplate
 };
 
-export default function ResumePreview({ resume, selectedTemplate, resumeRef }) {
+export default function ResumePreview({
+  resume,
+  selectedTemplate,
+  resumeRef,
+  spacingDensity = "standard"
+}) {
   const Template = templateMap[selectedTemplate] ?? ClassicTemplate;
 
   return (
@@ -32,7 +37,10 @@ export default function ResumePreview({ resume, selectedTemplate, resumeRef }) {
         </div>
       </div>
       <div className="overflow-x-auto rounded-xl bg-white/70 p-2 sm:p-3">
-        <div ref={resumeRef} className="mx-auto min-w-[210mm] overflow-hidden rounded-xl bg-white shadow-sm">
+        <div
+          ref={resumeRef}
+          className={`resume-density-${spacingDensity} mx-auto min-w-[210mm] overflow-hidden rounded-xl bg-white shadow-sm`}
+        >
           <Template resume={resume} />
         </div>
       </div>
