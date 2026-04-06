@@ -1,7 +1,11 @@
 import { useLayoutEffect, useState } from "react";
 
 const PAGE_HEIGHT_MM = 297;
+const PAGE_MARGIN_TOP_MM = 10;
+const PAGE_MARGIN_BOTTOM_MM = 10;
 const PAGE_HEIGHT_PX = (PAGE_HEIGHT_MM / 25.4) * 96;
+const PAGE_CONTENT_HEIGHT_PX =
+  ((PAGE_HEIGHT_MM - PAGE_MARGIN_TOP_MM - PAGE_MARGIN_BOTTOM_MM) / 25.4) * 96;
 
 export default function PaginatedResumePages({
   Template,
@@ -20,7 +24,7 @@ export default function PaginatedResumePages({
 
     const updatePageCount = () => {
       const contentHeight = resumeRef.current?.scrollHeight || 0;
-      setPageCount(Math.max(1, Math.ceil(contentHeight / PAGE_HEIGHT_PX)));
+      setPageCount(Math.max(1, Math.ceil(contentHeight / PAGE_CONTENT_HEIGHT_PX)));
     };
 
     updatePageCount();
@@ -60,7 +64,7 @@ export default function PaginatedResumePages({
                 className={`resume-density-${spacingDensity} bg-white`}
                 style={{
                   ...fontStyle,
-                  transform: `translateY(-${pageIndex * PAGE_HEIGHT_PX}px)`
+                  transform: `translateY(-${pageIndex * PAGE_CONTENT_HEIGHT_PX}px)`
                 }}
               >
                 <Template resume={resume} />
