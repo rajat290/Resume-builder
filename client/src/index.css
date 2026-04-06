@@ -151,6 +151,43 @@ body {
   font-family: var(--resume-font-heading);
 }
 
+.resume-preview-shell {
+  position: relative;
+}
+
+.resume-measure-shell {
+  position: absolute;
+  left: -99999px;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.resume-page-frame {
+  position: relative;
+  width: 210mm;
+  min-width: 210mm;
+  margin-inline: auto;
+}
+
+.resume-page-viewport {
+  height: 297mm;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: white;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+}
+
+.resume-page-label {
+  margin-bottom: 0.5rem;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(100 116 139);
+}
+
 .resume-density-compact .resume-page section {
   margin-top: 0.9rem !important;
 }

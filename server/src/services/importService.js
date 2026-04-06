@@ -113,7 +113,7 @@ function parseSkills(lines) {
       const [category, ...rest] = line.split(":");
       const items = rest
         .join(":")
-        .split(/,|•|-|\|/)
+        .split(/,|•|â€¢|-|\|/)
         .map((item) => item.trim())
         .filter(Boolean)
         .map((name) => ({ name, level: "Intermediate" }));
@@ -126,7 +126,7 @@ function parseSkills(lines) {
     }
 
     const items = line
-      .split(/,|•|-|\|/)
+      .split(/,|•|â€¢|-|\|/)
       .map((item) => item.trim())
       .filter(Boolean)
       .map((name) => ({ name, level: "Intermediate" }));
@@ -150,28 +150,100 @@ function parseBlocks(lines) {
     .filter((block) => block.length);
 }
 
+function isDateLine(line = "") {
+  return /present|\d{4}|\bjan\b|\bfeb\b|\bmar\b|\bapr\b|\bmay\b|\bjun\b|\bjul\b|\baug\b|\bsep\b|\boct\b|\bnov\b|\bdec\b/i.test(
+    line
+  );
+}
+
+function isBulletLine(line = "") {
+  return /^[-•â€¢*]\s*/.test(line);
+}
+
+function looksLikeExperienceHeading(line = "") {
+  if (!line || isBulletLine(line) || isDateLine(line)) {
+    return false;
+  }
+
+  if (/\s+at\s+/i.test(line) || /\s+\|\s+/.test(line)) {
+    return true;
+  }
+
+  const words = line.trim().split(/\s+/);
+  if (words.length < 2 || words.length > 12) {
+    return false;
+  }
+
+  const uppercaseWords = words.filter((word) => /^[A-Z][a-zA-Z0-9&/().+-]*$/.test(word));
+  return uppercaseWords.length >= Math.max(2, Math.ceil(words.length / 2));
+}
+
+function parseExperienceBlocks(lines) {
+  const blocks = [];
+  let currentBlock = [];
+  const cleanedLines = lines.map((line) => line.trim());
+
+  const flush = () => {
+    if (currentBlock.length) {
+      blocks.push(currentBlock);
+      currentBlock = [];
+    }
+  };
+
+  for (let index = 0; index < cleanedLines.length; index += 1) {
+    const line = cleanedLines[index];
+    if (!line) {
+      flush();
+      continue;
+    }
+
+    const nextLine = cleanedLines[index + 1] || "";
+    const nextNextLine = cleanedLines[index + 2] || "";
+    const shouldStartNewBlock =
+      currentBlock.length > 0 &&
+      looksLikeExperienceHeading(line) &&
+      currentBlock.some((item) => isDateLine(item) || isBulletLine(item)) &&
+      (
+        isDateLine(nextLine) ||
+        isBulletLine(nextLine) ||
+        isDateLine(nextNextLine) ||
+        /\s+at\s+/i.test(nextLine) ||
+        /\s+\|\s+/.test(nextLine)
+      );
+
+    if (shouldStartNewBlock) {
+      flush();
+    }
+
+    currentBlock.push(line);
+  }
+
+  flush();
+  return blocks;
+}
+
 function parseExperience(lines) {
-  return parseBlocks(lines).map((block) => {
-    const [line1 = "", line2 = "", ...rest] = block;
+  return parseExperienceBlocks(lines).map((block) => {
+    const [line1 = "", line2 = ""] = block;
     const [role, company] = line1.includes(" at ")
       ? line1.split(/\s+at\s+/i)
       : line1.split(/\s+\|\s+/);
 
-    const dateLine = block.find((line) =>
-      /present|\d{4}|\bjan\b|\bfeb\b|\bmar\b|\bapr\b|\bmay\b|\bjun\b|\bjul\b|\baug\b|\bsep\b|\boct\b|\bnov\b|\bdec\b/i.test(
-        line
-      )
-    );
+    const dateLine = block.find((line) => isDateLine(line)) || "";
+    const remainingLines = block.filter((line) => line !== line1 && line !== dateLine);
+    const companyLine =
+      company || (remainingLines[0] && !isBulletLine(remainingLines[0]) ? remainingLines[0] : "");
+    const achievementLines = remainingLines.filter((line) => line !== companyLine);
 
     return {
-      role: role || line1,
-      company: company || (dateLine === line2 ? "" : line2),
-      startDate: dateLine?.split("-")[0]?.trim() || "",
-      endDate: dateLine?.split("-")[1]?.trim() || "",
-      achievements: rest.length
-        ? rest.map((line) => line.replace(/^[-•]\s*/, ""))
-        : line2 && line2 !== dateLine
-          ? [line2]
+      role: (role || line1).trim(),
+      company: companyLine.trim(),
+      startDate: dateLine.split("-")[0]?.trim() || "",
+      endDate: dateLine.split("-")[1]?.trim() || "",
+      achievements: achievementLines.length
+        ? achievementLines.map((line) => line.replace(/^[-•â€¢*]\s*/, ""))
+        : line2 && line2 !== dateLine && line2 !== companyLine
+          ? [line2.replace(/^[-•â€¢*]\s*/, "")]
           : []
     };
   });
@@ -181,12 +253,22 @@ function parseProjects(lines) {
   return parseBlocks(lines).map((block) => {
     const [name = "", stack = "", description = ""] = block;
     const link = block.find((line) => /^https?:\/\//i.test(line)) || "";
+    const contentLines = block.slice(link ? 2 : 1).filter(Boolean);
+    const bulletLines = contentLines
+      .filter((line) => isBulletLine(line))
+      .map((line) => line.replace(/^[-•â€¢Ã¢â‚¬Â¢*]\s*/, "").trim());
+    const paragraphLines = contentLines.filter((line) => !isBulletLine(line));
+    const finalDescription = bulletLines.length
+      ? `${paragraphLines.join(" ")}<ul>${bulletLines
+          .map((line) => `<li>${line}</li>`)
+          .join("")}</ul>`.trim()
+      : contentLines.join(" ");
 
     return {
       name,
       stack: stack === link ? "" : stack,
       link,
-      description: block.slice(link ? 2 : 1).join(" ")
+      description: finalDescription
     };
   });
 }

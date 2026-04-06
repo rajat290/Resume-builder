@@ -6,6 +6,7 @@ import AtsCompactTemplate from "../templates/AtsCompactTemplate";
 import AtsDetailedTemplate from "../templates/AtsDetailedTemplate";
 import AtsMinimalTemplate from "../templates/AtsMinimalTemplate";
 import AtsSerifTemplate from "../templates/AtsSerifTemplate";
+import PaginatedResumePages from "./PaginatedResumePages";
 import { getFontStack } from "../utils/resumeHelpers";
 
 export const templateMap = {
@@ -42,15 +43,18 @@ export default function ResumePreview({
           </p>
           <p className="text-sm text-slate-500">Scroll horizontally on smaller screens.</p>
         </div>
-      </div>
-      <div className="overflow-x-auto rounded-xl bg-white/70 p-2 sm:p-3">
-        <div
-          ref={resumeRef}
-          className={`resume-density-${spacingDensity} mx-auto min-w-[210mm] overflow-hidden rounded-xl bg-white shadow-sm`}
-          style={fontStyle}
-        >
-          <Template resume={resume} />
+        <div className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+          Multi-page preview
         </div>
+      </div>
+      <div className="resume-preview-shell overflow-x-auto rounded-xl bg-white/70 p-2 sm:p-3">
+        <PaginatedResumePages
+          Template={Template}
+          resume={resume}
+          resumeRef={resumeRef}
+          spacingDensity={spacingDensity}
+          fontStyle={fontStyle}
+        />
       </div>
     </div>
   );

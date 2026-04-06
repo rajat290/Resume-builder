@@ -177,9 +177,9 @@ function PlainProjects({ projects }) {
               {hasText(project.link) && <p className="text-[12px] text-black">{project.link}</p>}
             </div>
             {hasText(project.description) && (
-              <p className="mt-1 text-[13px] leading-6 text-black">
+              <div className="mt-1 text-[13px] leading-6 text-black">
                 {renderRichText(project.description, `ats-project-description-${index}`)}
-              </p>
+              </div>
             )}
           </article>
         ))}
