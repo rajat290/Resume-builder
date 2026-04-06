@@ -1,6 +1,7 @@
 import { useMemo } from "react";
+import PaginatedResumePages from "../PaginatedResumePages";
 import { templateMap } from "../ResumePreview";
-import { densityOptions, fontOptions, templateOptions } from "../../utils/resumeHelpers";
+import { densityOptions, fontOptions, getFontStack, templateOptions } from "../../utils/resumeHelpers";
 
 export default function MobilePreviewTab({
   resume,
@@ -21,6 +22,10 @@ export default function MobilePreviewTab({
     () => templateMap[templateId] ?? templateMap.classic,
     [templateId]
   );
+  const fontStyle = {
+    "--resume-font-heading": getFontStack(headingFont, "merriweather"),
+    "--resume-font-body": getFontStack(bodyFont, "inter")
+  };
 
   return (
     <div className="space-y-4">
@@ -98,16 +103,20 @@ export default function MobilePreviewTab({
         <p className="mt-3 text-xs leading-5 text-slate-400">
           If the print dialog still shows a date or title, turn off `Headers and footers` before saving the PDF.
         </p>
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+          Multi-page preview enabled
+        </p>
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-[#dfe7ef] p-3 shadow-panel">
-        <div className="overflow-x-auto rounded-xl bg-white/70 p-2">
-          <div
-            ref={resumeRef}
-            className={`resume-density-${spacingDensity} mx-auto min-w-[210mm] overflow-hidden rounded-xl bg-white shadow-sm`}
-          >
-            <Template resume={resume} />
-          </div>
+        <div className="resume-preview-shell overflow-x-auto rounded-xl bg-white/70 p-2">
+          <PaginatedResumePages
+            Template={Template}
+            resume={resume}
+            resumeRef={resumeRef}
+            spacingDensity={spacingDensity}
+            fontStyle={fontStyle}
+          />
         </div>
       </div>
     </div>

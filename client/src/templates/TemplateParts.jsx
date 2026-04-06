@@ -183,9 +183,9 @@ export function ProjectBlock({ projects, dark = false }) {
               )}
             </div>
             {hasText(project.description) && (
-              <p className={`mt-2 text-sm leading-6 ${dark ? "text-slate-200" : "text-slate-700"}`}>
+              <div className={`mt-2 text-sm leading-6 ${dark ? "text-slate-200" : "text-slate-700"}`}>
                 {renderRichText(project.description, `project-description-${index}`)}
-              </p>
+              </div>
             )}
           </article>
         ))}
