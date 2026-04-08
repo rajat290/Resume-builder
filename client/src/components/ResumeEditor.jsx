@@ -497,6 +497,14 @@ export default function ResumeEditor({
                   updateListItem("projects", index, "link", event.target.value)
                 }
               />
+              <input
+                className="field-input"
+                placeholder="Date (e.g. Dec 2023 - Feb 2024)"
+                value={project.date}
+                onChange={(event) =>
+                  updateListItem("projects", index, "date", event.target.value)
+                }
+              />
               <RichTextField
                 label="Project description"
                 value={project.description}

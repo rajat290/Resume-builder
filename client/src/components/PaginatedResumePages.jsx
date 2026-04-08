@@ -24,7 +24,9 @@ export default function PaginatedResumePages({
 
     const updatePageCount = () => {
       const contentHeight = resumeRef.current?.scrollHeight || 0;
-      setPageCount(Math.max(1, Math.ceil(contentHeight / PAGE_CONTENT_HEIGHT_PX)));
+      // Subtract a small buffer (2px) to prevent "ghost" extra pages 
+      // from sub-pixel rendering or rounding errors.
+      setPageCount(Math.max(1, Math.ceil((contentHeight - 2) / PAGE_CONTENT_HEIGHT_PX)));
     };
 
     updatePageCount();
