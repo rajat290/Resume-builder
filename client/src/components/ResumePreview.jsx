@@ -6,6 +6,7 @@ import AtsCompactTemplate from "../templates/AtsCompactTemplate";
 import AtsDetailedTemplate from "../templates/AtsDetailedTemplate";
 import AtsMinimalTemplate from "../templates/AtsMinimalTemplate";
 import AtsSerifTemplate from "../templates/AtsSerifTemplate";
+import ProfessionalUniversalTemplate from "../templates/ProfessionalUniversalTemplate";
 import PaginatedResumePages from "./PaginatedResumePages";
 import { getFontStack } from "../utils/resumeHelpers";
 
@@ -17,7 +18,8 @@ export const templateMap = {
   "ats-minimal": AtsMinimalTemplate,
   "ats-compact": AtsCompactTemplate,
   "ats-serif": AtsSerifTemplate,
-  "ats-detailed": AtsDetailedTemplate
+  "ats-detailed": AtsDetailedTemplate,
+  "universal-professional": ProfessionalUniversalTemplate
 };
 
 export default function ResumePreview({

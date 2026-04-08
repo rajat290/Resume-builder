@@ -38,6 +38,7 @@ export const createProject = () => ({
   name: "",
   stack: "",
   link: "",
+  date: "",
   description: ""
 });
 
@@ -107,6 +108,7 @@ export const normalizeResumeData = (resume = {}) => ({
         name: safeString(item?.name),
         stack: safeString(item?.stack),
         link: safeString(item?.link),
+        date: safeString(item?.date),
         description: safeString(item?.description)
       }))
     : [],
@@ -165,7 +167,8 @@ export const templateOptions = [
   { id: "ats-minimal", label: "ATS Minimal" },
   { id: "ats-compact", label: "ATS Compact" },
   { id: "ats-serif", label: "ATS Serif" },
-  { id: "ats-detailed", label: "ATS Detailed" }
+  { id: "ats-detailed", label: "ATS Detailed" },
+  { id: "universal-professional", label: "Professional Universal" }
 ];
 
 export const densityOptions = [
